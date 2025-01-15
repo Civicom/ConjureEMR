@@ -36,6 +36,7 @@ export default function SchedulePage(): ReactElement {
   const [isItemActive, setIsItemActive] = useState<boolean>(false);
   const [slug, setSlug] = useState<string | undefined>(undefined);
   const [timezone, setTimezone] = useState<string | undefined>(undefined);
+  const [state, setState] = useState<string | undefined>(undefined);
   const [saveLoading, setSaveLoading] = useState<boolean>(false);
 
   const isActive = (item: Location | Practitioner | HealthcareService): boolean => {
@@ -61,6 +62,7 @@ export default function SchedulePage(): ReactElement {
       setSlug(slugTemp?.value);
       setTimezone(getTimezone(itemTemp));
       setIsItemActive(isActive(itemTemp));
+      setState(itemTemp.address?.state);
     }
     void getItem(getResource(scheduleType));
   }, [fhirClient, id, scheduleType]);
@@ -87,7 +89,7 @@ export default function SchedulePage(): ReactElement {
     }
     return addressString;
   };
-
+  // console.log(item);
   // handle functions
   const handleTabChange = (event: React.SyntheticEvent, newTabName: string): void => {
     setTabName(newTabName);
@@ -210,6 +212,42 @@ export default function SchedulePage(): ReactElement {
         }
       : undefined;
 
+
+      // update state
+      let stateOperation: Operation | undefined;
+      if (item?.address) {
+        // if there is no change in state, do nothing
+        if (item.address.state === state) {
+          console.log('No change in state');
+          return;
+        }
+        // if there is an existing state, replace it 
+        else {
+          console.log('Replacing existing state');
+          stateOperation = {
+            op: 'replace',
+            path: '/address/state',
+            value: state,
+          };
+          // Update item with new state
+          item.address.state = state;
+        }
+      }
+      // if there is no address, add one
+      else {
+        console.log('Adding new address with state');
+        stateOperation = {
+          op: 'add', 
+          path: '/address',
+          value: {
+            state: state
+          }
+        };
+        // Add address to item
+        item.address = { state };
+      }
+
+
     // update timezone
     let timezoneOperation: Operation | undefined;
     const timezoneExtensionIndex = item?.extension?.findIndex((ext) => ext.url === TIMEZONE_EXTENSION_URL);
@@ -243,7 +281,7 @@ export default function SchedulePage(): ReactElement {
       };
     }
 
-    const patchOperations: Operation[] = [operation, timezoneOperation].filter(
+    const patchOperations: Operation[] = [operation, timezoneOperation, stateOperation].filter(
       (operation) => operation !== undefined,
     ) as Operation[];
 
@@ -259,7 +297,10 @@ export default function SchedulePage(): ReactElement {
       operations: patchOperations,
     });
 
-    setItem(itemTemp as Location | Practitioner | HealthcareService);
+    // Update the local state with the server response
+    if (itemTemp) {
+      setItem(itemTemp as Location | Practitioner | HealthcareService);
+    }
     setSaveLoading(false);
   }
 
@@ -375,6 +416,13 @@ export default function SchedulePage(): ReactElement {
                             setTimezone(newValue);
                           }
                         }}
+                      />
+                      <br />
+                      <TextField
+                        label="State"
+                        value={state}
+                        onChange={(event) => setState(event.target.value)}
+                        sx={{ width: '250px' }}
                       />
                       <br />
                       <LoadingButton type="submit" loading={saveLoading} variant="contained" sx={{ marginTop: 2 }}>
