@@ -35,6 +35,7 @@ export default function PageContainer({ sidebarItems, tabTitle, title, children 
     </Container>
   );
 
+  // TODO: make this a sidebar component
   return (
     <>
       {sidebarItems ? (
