@@ -246,7 +246,7 @@ const EmployeesTable = ({ employees }: { employees: any }) => {
                 <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      <Link to={`/patient/${row.original.id}`} className="block -m-4 p-4">
+                      <Link to={`/employee/${row.original.id}`} className="block -m-4 p-4">
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </Link>
                     </TableCell>
