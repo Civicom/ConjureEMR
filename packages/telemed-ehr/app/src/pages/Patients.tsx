@@ -261,52 +261,6 @@ export default function PatientsPage(): ReactElement {
             patientsLoading={loading}
           />
         </div>
-        <div className="mt-10">
-          <h1 className="text-3xl font-bold pb-8">Otther Patients Page</h1>
-          <TabPanel value={'Patients'} sx={{ p: 0 }}>
-            <Paper sx={{ p: 2 }}>
-              <form onSubmit={(event) => handleFormSubmit(event)}>
-                <Grid container spacing={2} display="flex" alignItems="center">
-                  <Grid item xs={12} sm={5} sx={{ marginTop: 2 }}>
-                    <PatientSearch
-                      nameFilter={patientNameFilter}
-                      setNameFilter={setPatientNameFilter}
-                      onClear={() => {
-                        setPatients(null);
-                        setRelatedPersons(null);
-                        setTotalPatients(0);
-                        setSubmittedName(null);
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={5} sx={{ marginTop: 2.5 }}>
-                    <PhoneSearch
-                      phoneFilter={phoneFilter}
-                      setPhoneFilter={setPhoneFilter}
-                      onClear={() => {
-                        setPatients(null);
-                        setRelatedPersons(null);
-                        setTotalPatients(0);
-                        setSubmittedPhone(null);
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={2}>
-                    <Button type="submit" variant="contained" fullWidth>
-                      Submit
-                    </Button>
-                  </Grid>
-                </Grid>
-              </form>
-              <PatientsTable
-                fhirPatients={patients}
-                relatedPersons={relatedPersons}
-                total={totalPatients}
-                patientsLoading={loading}
-              />
-            </Paper>
-          </TabPanel>
-        </div>
       </div>
     </div>
   );

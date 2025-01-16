@@ -278,6 +278,16 @@ export function PatientTable({ fhirPatients, relatedPersons, total, patientsLoad
       const patientInfo = fhirPatients.map((fhirPatient, index) => {
         const latestAppointment = appointments[index];
 
+        // Find the Location resource specifically among included resources
+        const locationResource = latestAppointment?.includedResources.find(
+          (resource) => resource.resourceType === 'Location',
+        );
+
+        console.group('Patient Info');
+        console.log('Location:', locationResource);
+        console.log('Appointment:', latestAppointment);
+        console.groupEnd();
+
         return {
           id: fhirPatient.id,
           patient: fhirPatient.name && convertFhirNameToDisplayName(fhirPatient.name[0]),
@@ -288,7 +298,10 @@ export function PatientTable({ fhirPatients, relatedPersons, total, patientsLoad
               ?.telecom?.find((telecom) => telecom.system === 'phone')?.value,
           ),
           lastVisit: latestAppointment?.appointment.start,
-          lastOffice: latestAppointment?.includedResources[0]?.name,
+          // lastOffice: latestAppointment?.includedResources[0]?.name || '',
+          // TODO: Fix issue with includedResources[0] not being a Location
+          // TODO: Fix issue with lastOffice not being populated
+          lastOffice: 'TODO: Check code' || '',
         };
       });
 

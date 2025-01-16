@@ -132,8 +132,12 @@ export const columns: ColumnDef<Employee>[] = [
     cell: ({ row }) => {
       const status = row.getValue('status') as string;
       return (
-        <Badge className={status === 'Active' ? 'bg-teal-500 hover:bg-teal-500' : 'bg-red-500 hover:bg-red-500'}>
-          {status}
+        <Badge variant="outline">
+          <div className="flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full ${status === 'Active' ? 'bg-green-500' : 'bg-red-500'}`} />
+            {/* <Badge className={status === 'Active' ? 'bg-teal-500 hover:bg-teal-500' : 'bg-red-500 hover:bg-red-500'}> */}
+            {status}
+          </div>
         </Badge>
       );
     },
