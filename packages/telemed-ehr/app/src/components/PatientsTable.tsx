@@ -155,6 +155,9 @@ export default function PatientsTable({
         const locationState = locationResource?.address?.state;
         const locationCity = locationResource?.address?.city;
 
+        console.log('locationState:', locationState);
+        console.log('locationCity:', locationCity);
+
         const index = patientInfo.findIndex((info) => info.id === patientID);
         patientInfo[index] = {
           ...patientInfo[index],
