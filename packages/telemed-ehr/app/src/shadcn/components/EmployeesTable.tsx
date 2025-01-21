@@ -175,9 +175,6 @@ const EmployeesTable = () => {
   const [filter, setFilter] = React.useState<EmployeeFilter>({provider: false, name: '',});
   const [employees, setEmployees] = React.useState<EmployeeDetails[]>([]);
 
-  // const handleTabChange = (_: any, newValue: PageTab): any => {
-  //   setPageTab(newValue);
-  // };
   const { zambdaClient } = useApiClients();
   const { isFetching } = useQuery(
     ['get-employees', { zambdaClient }],
@@ -192,17 +189,20 @@ const EmployeesTable = () => {
 
   const tableData = React.useMemo(() => {
 
-    if (!employees) return [];
+    const filteredEmployees = employees.filter((employee: EmployeeDetails) => {
 
-    const filteredEmployees = employees.filter((employee) => {
-      if (filter.provider && employee.isProvider === false) return false;
-      if (filter.name && !employee.name.includes(filter.name)) return false;
+      const name: string = employee.name.toLowerCase();
+      const filterName: string = filter.name.toLowerCase();
+
+      if (filter.name && !name.includes(filterName)) return false;
+      if (filter.provider && !employee.isProvider) return false;
+
       return true;
     });
 
     return filteredEmployees;
 
-  }, [employees]);
+  }, [employees, filter]);
 
   const table = useReactTable({
     data: tableData, // Use the transformed data instead of static data
@@ -231,7 +231,12 @@ const EmployeesTable = () => {
   return (
     <div className="w-full">
       <div className="flex items-center py-4">
-        <Input placeholder="Name" value={filter.name} onChange={(e) => setFilter({ ...filter, name: e.target.value })} />
+        <Input placeholder="Name" value={filter.name} onChange={
+            (event: React.ChangeEvent<HTMLInputElement> ) => {
+              setFilter({ ...filter, name: event.target.value })
+            }
+          }
+        />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -241,7 +246,9 @@ const EmployeesTable = () => {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Role</DropdownMenuLabel>
-            <DropdownMenuCheckboxItem checked={filter.provider} onCheckedChange={(value) => setFilter({ ...filter, provider: value })}>Provider</DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem checked={filter.provider} onCheckedChange={
+              (value: boolean) => setFilter({ ...filter, provider: value })
+            }>Provider</DropdownMenuCheckboxItem>
           </DropdownMenuContent>
         </DropdownMenu>
         
