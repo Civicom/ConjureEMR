@@ -7,6 +7,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
 } from '@/components/ui/dropdown-menu';
 import { DropdownMenu } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
@@ -29,23 +30,17 @@ import {
 import { Table, TableCell, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
+import { EmployeeDetails, GetEmployeesResponse } from '../../types/types';
+import { useApiClients } from '../../hooks/useAppClients';
+import { getEmployees } from '../../api/api';
+import { useQuery } from 'react-query';
 
-// import { Employee } from '@/types/types';
-
-// interface EmployeesTableProps {
-//   employees: Employee[];
-// }
-
-interface Employee {
-  id: string;
+interface EmployeeFilter {
+  provider: boolean;
   name: string;
-  phone: string;
-  email: string;
-  lastLogin: string;
-  status: 'active' | 'inactive';
 }
 
-export const columns: ColumnDef<Employee>[] = [
+export const columns: ColumnDef<EmployeeDetails>[] = [
   {
     id: 'select',
     header: ({ table }) => (
@@ -82,9 +77,9 @@ export const columns: ColumnDef<Employee>[] = [
       return (
         <div className="text-black flex items-center gap-4">
           <Avatar className="w-8 h-8">
-            <AvatarImage
+            {/* <AvatarImage
               src={`https://randomuser.me/api/portraits/med/men/${Math.floor(Math.random() * 100)}111.jpg`}
-            />
+            /> */}
             <AvatarFallback className="bg-blue-50 text-black">{initials}</AvatarFallback>
           </Avatar>
 
@@ -171,23 +166,43 @@ export const columns: ColumnDef<Employee>[] = [
   },
 ];
 
-const EmployeesTable = ({ employees }: { employees: any }) => {
+const EmployeesTable = () => {
+
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
+  const [filter, setFilter] = React.useState<EmployeeFilter>({provider: false, name: '',});
+  const [employees, setEmployees] = React.useState<EmployeeDetails[]>([]);
+
+  const { zambdaClient } = useApiClients();
+  const { isFetching } = useQuery(
+    ['get-employees', { zambdaClient }],
+    () => (zambdaClient ? getEmployees(zambdaClient) : null),
+    {
+      onSuccess: (response: GetEmployeesResponse) => {
+        setEmployees(response?.employees ?? []);
+      },
+      enabled: !!zambdaClient,
+    },
+  );
 
   const tableData = React.useMemo(() => {
-    if (!employees) return [];
 
-    return employees.map((employee) => ({
-      id: employee.id,
-      name: employee.name,
-      email: employee.email,
-      lastLogin: employee.lastLogin,
-      status: employee.status,
-    }));
-  }, [employees]);
+    const filteredEmployees = employees.filter((employee: EmployeeDetails) => {
+
+      const name: string = employee.name.toLowerCase();
+      const filterName: string = filter.name.toLowerCase();
+
+      if (filter.name && !name.includes(filterName)) return false;
+      if (filter.provider && !employee.isProvider) return false;
+
+      return true;
+    });
+
+    return filteredEmployees;
+
+  }, [employees, filter]);
 
   const table = useReactTable({
     data: tableData, // Use the transformed data instead of static data
@@ -216,7 +231,27 @@ const EmployeesTable = ({ employees }: { employees: any }) => {
   return (
     <div className="w-full">
       <div className="flex items-center py-4">
-        <Input placeholder="Filter name" />
+        <Input placeholder="Name" value={filter.name} onChange={
+            (event: React.ChangeEvent<HTMLInputElement> ) => {
+              setFilter({ ...filter, name: event.target.value })
+            }
+          }
+        />
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="ml-auto">
+              Filter <ChevronDown />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Role</DropdownMenuLabel>
+            <DropdownMenuCheckboxItem checked={filter.provider} onCheckedChange={
+              (value: boolean) => setFilter({ ...filter, provider: value })
+            }>Provider</DropdownMenuCheckboxItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
@@ -246,7 +281,7 @@ const EmployeesTable = ({ employees }: { employees: any }) => {
                 <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      <Link to={`/patient/${row.original.id}`} className="block -m-4 p-4">
+                      <Link to={`/employee/${row.original.id}`} className="block -m-4 p-4">
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </Link>
                     </TableCell>
