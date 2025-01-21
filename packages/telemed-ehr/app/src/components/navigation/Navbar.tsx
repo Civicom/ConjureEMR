@@ -135,17 +135,17 @@ export default function Navbar(): ReactElement {
   }
 
   const menuItems = [
-    {name: 'In Person', url: '/visits',
+    {name: 'In Person', url: ['/visits', '/visit'],
     icon: <Users className="mx-auto my-auto text-[#4b5c6b] w-[30px] h-[30px]" />
     }, 
-    {name: 'Schedules', url: '/schedules', icon: <CalendarDays className="mx-auto my-auto text-[#4b5c6b] w-[30px] h-[30px]" />}, 
-    {name: 'Patients', url: '/patients',icon: <Accessibility className="mx-auto my-auto text-[#4b5c6b] w-[35px] h-[35px]" />
+    {name: 'Schedules', url: ['/schedules', '/schedule'], icon: <CalendarDays className="mx-auto my-auto text-[#4b5c6b] w-[30px] h-[30px]" />}, 
+    {name: 'Patients', url: ['/patients', '/patient'],icon: <Accessibility className="mx-auto my-auto text-[#4b5c6b] w-[35px] h-[35px]" />
     }, 
-    {name: 'Employees', url: '/employees',icon: <BriefcaseBusiness className="mx-auto my-auto text-[#4b5c6b] w-[30px] h-[30px]" />
+    {name: 'Employees', url: ['/employees', '/employee'],icon: <BriefcaseBusiness className="mx-auto my-auto text-[#4b5c6b] w-[30px] h-[30px]" />
     }, 
-    {name: 'Admin', url: '/telemed-admin',icon: <Lock className="mx-auto my-auto text-[#4b5c6b] w-[30px] h-[30px]" />
+    {name: 'Admin', url: ['/telemed-admin', '/video-call'],icon: <Lock className="mx-auto my-auto text-[#4b5c6b] w-[30px] h-[30px]" />
     },
-    {name: 'Telemedicine', url: '/telemed/appointments',icon: <Headset className="mx-auto my-auto text-[#4b5c6b] w-[30px] h-[30px]" />
+    {name: 'Telemedicine', url: ['/telemed/appointments', '/video-call', '/telemed/appointments'],icon: <Headset className="mx-auto my-auto text-[#4b5c6b] w-[30px] h-[30px]" />
     }];
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   // console.log(currentTab);
@@ -170,14 +170,14 @@ export default function Navbar(): ReactElement {
           <div id="navbar-center-container" className='flex flex-row mt-[14px] select-none transition-all duration-300 ease-in-out h-full'>
             {menuItems.map((menuItem) => (
               
-                <div id="navbar-center-menu-container" className={`flex flex-col pb-[7px] px-[16px] justify-center items-center w-fit ${location.pathname.startsWith(menuItem.url) ? 'border-b-4 border-[#D3455B]' : ''}`} key={menuItem.name}>
-                  <Link to={menuItem.url} id="navbar-center-menu" className='flex flex-col text-decoration-none m-0 auto'>
+                <div id="navbar-center-menu-container" className={`flex flex-col pb-[7px] px-[16px] justify-center items-center w-fit ${menuItem.url.some(url => location.pathname.startsWith(url)) ? 'border-b-4 border-[#D3455B]' : ''}`} key={menuItem.name}>
+                  <Link to={menuItem.url[0]} id="navbar-center-menu" className='flex flex-col text-decoration-none m-0 auto'>
 
                     {menuItem.icon && React.cloneElement(menuItem.icon as React.ReactElement, {
-                      className: `mx-auto my-auto ${location.pathname.startsWith(menuItem.url) ? 'text-[#D3455B]' : 'text-[#4b5c6b]'} mb-[3px] w-[30px] h-[30px]`
+                      className: `mx-auto my-auto ${menuItem.url.some(url => location.pathname.startsWith(url)) ? 'text-[#D3455B]' : 'text-[#4b5c6b]'} mb-[3px] w-[30px] h-[30px]`
                     })}
 
-                    <p id="navbar-menu-text" className={`text-[16px] font-semibold ${location.pathname.startsWith(menuItem.url) ? 'text-[#D3455B]' : 'text-[#4b5c6b]'} no-underline cursor-pointer m-0 auto text-nowrap`}>{menuItem.name}</p>
+                    <p id="navbar-menu-text" className={`text-[16px] font-semibold ${menuItem.url.some(url => location.pathname.startsWith(url)) ? 'text-[#D3455B]' : 'text-[#4b5c6b]'} no-underline cursor-pointer m-0 auto text-nowrap`}>{menuItem.name}</p>
                   </Link>
                 </div>
               ))}
