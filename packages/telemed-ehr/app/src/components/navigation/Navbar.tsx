@@ -77,14 +77,14 @@ const providerNavbarItems: NavbarItems = {
 };
 
 administratorNavbarItems['Admin'] = {
-  urls: ['/telemed-admin'],
+  urls: ['/admin'],
   icon: <Settings className="h-4 w-4" />,
 };
 administratorNavbarItems['Telemedicine'] = {
   urls: ['/telemed/appointments', '/telemed', '/video-call'],
   icon: <Video className="h-4 w-4" />,
 };
-managerNavbarItems['Admin'] = { urls: ['/telemed-admin'] };
+managerNavbarItems['Admin'] = { urls: ['/admin'] };
 providerNavbarItems['Telemedicine'] = { urls: ['/telemed/appointments', '/telemed', '/video-call'] };
 providerNavbarItems['Employees'] = { urls: ['/employees', '/employee'] };
 
@@ -143,13 +143,13 @@ export default function Navbar(): ReactElement {
     }, 
     {name: 'Employees', url: ['/employees', '/employee'],icon: <BriefcaseBusiness className="mx-auto my-auto text-[#4b5c6b] w-[30px] h-[30px]" />
     }, 
-    {name: 'Admin', url: ['/telemed-admin', '/video-call'],icon: <Lock className="mx-auto my-auto text-[#4b5c6b] w-[30px] h-[30px]" />
+    {name: 'Admin', url: ['/admin', '/video-call'],icon: <Lock className="mx-auto my-auto text-[#4b5c6b] w-[30px] h-[30px]" />
     },
     {name: 'Telemedicine', url: ['/telemed/appointments', '/video-call', '/telemed/appointments'],icon: <Headset className="mx-auto my-auto text-[#4b5c6b] w-[30px] h-[30px]" />
     }];
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   // console.log(currentTab);
-  console.log(user);
+  //console.log(user);
   return (
     <>
       {/* New Navbar */}
