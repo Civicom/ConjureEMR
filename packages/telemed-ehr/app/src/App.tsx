@@ -28,6 +28,7 @@ import { AppointmentPage } from './pages/AppointmentPage';
 import AddSchedulePage from './pages/AddSchedulePage';
 import Version from './pages/Version';
 import { isErxEnabled } from './helpers/erx';
+import Resources from './components/TestPage/Test';
 import('@photonhealth/elements').catch(console.log);
 
 const TelemedTrackingBoardPageLazy = lazy(async () => {
@@ -127,6 +128,8 @@ function App(): ReactElement {
                   <Route path={INSURANCES_PATH} element={<TelemedAdminPage />} />
                   <Route path={`${INSURANCES_PATH}/:insurance`} element={<EditInsurance />} />
                   <Route path="*" element={<Navigate to={'/'} />} />
+                  {/* TODO: remove in production */}
+                  <Route path="/test" element={<Resources />} />
                 </>
               )}
               {currentUser?.hasRole([RoleType.Administrator, RoleType.Provider]) && (

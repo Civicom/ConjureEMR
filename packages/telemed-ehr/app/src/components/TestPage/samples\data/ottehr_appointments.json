@@ -1,0 +1,43 @@
+{
+  "id": "49a07d93-cfcf-4386-bc0c-56191928d7e0",
+  "start": "2025-01-21T12:40:44.691-05:00",
+  "patient": {
+    "id": "ce14a834-e32c-44ad-b0cb-f40d9effc2e0",
+    "firstName": "Hannah",
+    "lastName": "Elliott",
+    "dateOfBirth": "2007-01-21"
+  },
+  "smsModel": {
+    "hasUnreadMessages": false,
+    "recipients": [
+      {
+        "relatedPersonId": "2dbb5dba-2b04-41e0-bcfd-2681e25c8522",
+        "smsNumber": "+17601111111"
+      }
+    ]
+  },
+  "reasonForVisit": "Unknown",
+  "appointmentType": "now",
+  "appointmentStatus": "proposed",
+  "status": "pending",
+  "provider": "",
+  "group": "",
+    "demographics": false,
+    "photoID": false,
+    "insuranceCard": false,
+    "consent": false,
+    "ovrpInterest": false
+  },
+  "next": false,
+  "visitStatusHistory": [
+    {
+      "status": "pending",
+      "period": {
+        "start": "2025-01-21T17:40:46.741Z"
+      },
+      "label": "pending"
+    }
+  ],
+  "needsDOBConfirmation": false,
+  "encounterId": "e3867d2d-bbf7-4a6d-b504-d5adc21a0a5d"
+}
