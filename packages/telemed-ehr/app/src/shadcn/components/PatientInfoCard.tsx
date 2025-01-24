@@ -118,7 +118,7 @@ export function PatientInfoCard({
   // Construct fields data directly from patient
   const visitInfoFields = [
     {
-      label: 'Last visit',
+      label: 'Last Visit',
       icon: Calendar,
       value: formatISODateToLocaleDate(lastAppointment ?? '') ?? 'No visits',
       // value: formatISODateToLocaleDate(patient?.meta?.lastUpdated ?? 'N/A'), // This would need to come from appointments data
