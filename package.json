@@ -2,6 +2,7 @@
   "name": "ottehr",
   "version": "0.18.0",
   "private": true,
+  "baseUrl": "packages/",
   "scripts": {
     "test": "pnpm recursive run test",
     "build": "sh ./scripts/build.sh",

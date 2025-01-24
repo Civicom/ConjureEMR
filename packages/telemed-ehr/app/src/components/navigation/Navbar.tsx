@@ -1,31 +1,26 @@
-import { AccountCircle, KeyboardArrowDown } from '@mui/icons-material';
+import { KeyboardArrowDown } from '@mui/icons-material';
+import * as TabsPrimitive from '@radix-ui/react-tabs';
 import { TabList } from '@mui/lab';
 import {
-  AppBar,
   Box,
   Button,
   Container,
   Divider,
-  // IconButton,
   Menu,
   MenuItem,
-  Skeleton,
   Tab,
-  Toolbar,
   Typography,
   useTheme,
 } from '@mui/material';
 import { MouseEvent, ReactElement, SyntheticEvent, useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import logo from '../../assets/logo-4x.png';
 import useOttehrUser from '../../hooks/useOttehrUser';
 import { AppTab, useNavStore } from '../../state/nav.store';
-import { isLocalOrDevOrTestingOrTrainingEnv } from '../../telemed/utils/env.helper';
 import { RoleType } from '../../types/types';
-import { otherColors } from '../../CustomThemeProvider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Users, Calendar, UserSquare2, Building2, Video, Settings, CalendarDays, Accessibility, BriefcaseBusiness, Lock, Headset  } from 'lucide-react';
 import { getInitials } from '@/lib/utils';
+import { TabsTrigger } from '../ui/tabs';
 import React from 'react';
 
 const { VITE_APP_ORGANIZATION_NAME_SHORT: ORGANIZATION_NAME_SHORT } = import.meta.env;
@@ -41,52 +36,28 @@ type NavbarItems = {
 };
 
 const administratorNavbarItems: NavbarItems = {
-  'In Person': {
-    urls: ['/visits', '/visit'],
-    icon: <Building2 className="h-4 w-4" />,
-  },
-  Schedules: {
-    urls: ['/schedules', '/schedule'],
-    icon: <Calendar className="h-4 w-4" />,
-  },
-  Patients: {
-    urls: ['/patients', '/patient'],
-    icon: <Users className="h-4 w-4" />,
-  },
-  Employees: {
-    urls: ['/employees', '/employee'],
-    icon: <UserSquare2 className="h-4 w-4" />,
-  },
+  'In Person': { urls: ['/visits', '/visit'], icon: <Building2 className="h-4 w-4" />, },
+  Schedules: { urls: ['/schedules', '/schedule'], icon: <Calendar className="h-4 w-4" />, },
+  Patients: { urls: ['/patients', '/patient'], icon: <Users className="h-4 w-4" />, },
+  Admin: { urls: ['/admin'], icon: <Settings className="h-4 w-4" />, },
+  Telemedicine: { urls: ['/telemed/appointments', '/telemed', '/video-call'], icon: <Video className="h-4 w-4" />, },
 };
-
 const managerNavbarItems: NavbarItems = {
-  'In Person': { urls: ['/visits', '/visit'] },
-  Schedules: { urls: ['/schedules', '/schedule'] },
-  Patients: { urls: ['/patients', '/patient'] },
-  Employees: { urls: ['/employees', '/employee'] },
+  'In Person': { urls: ['/visits', '/visit'], icon: <Building2 className="h-4 w-4" />, },
+  Schedules: { urls: ['/schedules', '/schedule'], icon: <Calendar className="h-4 w-4" />, },
+  Patients: { urls: ['/patients', '/patient'], icon: <Users className="h-4 w-4" />, },
 };
 
 const staffNavbarItems: NavbarItems = {
-  'In Person': { urls: ['/visits', '/visit'] },
-  Patients: { urls: ['/patients', '/patient'] },
+  'In Person': { urls: ['/visits', '/visit'], icon: <Building2 className="h-4 w-4" />, },
+  Patients: { urls: ['/patients', '/patient'], icon: <Users className="h-4 w-4" />, },
 };
 
 const providerNavbarItems: NavbarItems = {
-  'In Person': { urls: ['/visits', '/visit'] },
-  Patients: { urls: ['/patients', '/patient'] },
+  'In Person': { urls: ['/visits', '/visit'], icon: <Building2 className="h-4 w-4" />, },
+  Patients: { urls: ['/patients', '/patient'], icon: <Users className="h-4 w-4" />, },
+  Telemedicine: { urls: ['/telemed/appointments', '/telemed', '/video-call'], icon: <Video className="h-4 w-4" />, },
 };
-
-administratorNavbarItems['Admin'] = {
-  urls: ['/telemed-admin'],
-  icon: <Settings className="h-4 w-4" />,
-};
-administratorNavbarItems['Telemedicine'] = {
-  urls: ['/telemed/appointments', '/telemed', '/video-call'],
-  icon: <Video className="h-4 w-4" />,
-};
-managerNavbarItems['Admin'] = { urls: ['/telemed-admin'] };
-providerNavbarItems['Telemedicine'] = { urls: ['/telemed/appointments', '/telemed', '/video-call'] };
-providerNavbarItems['Employees'] = { urls: ['/employees', '/employee'] };
 
 export default function Navbar(): ReactElement {
   const theme = useTheme();
@@ -102,14 +73,14 @@ export default function Navbar(): ReactElement {
       if (user.hasRole([RoleType.Administrator])) {
         navItems = { ...navItems, ...administratorNavbarItems };
       }
-      if (user.hasRole([RoleType.Manager])) {
+      else if (user.hasRole([RoleType.Manager])) {
         navItems = { ...navItems, ...managerNavbarItems };
       }
-      if (user.hasRole([RoleType.Staff])) {
-        navItems = { ...navItems, ...staffNavbarItems };
-      }
-      if (user.hasRole([RoleType.Provider])) {
+      else if (user.hasRole([RoleType.Provider])) {
         navItems = { ...navItems, ...providerNavbarItems };
+      }
+      else if (user.hasRole([RoleType.Staff])) {
+        navItems = { ...navItems, ...staffNavbarItems };
       }
     }
     return navItems;
@@ -141,15 +112,13 @@ export default function Navbar(): ReactElement {
     {name: 'Schedules', url: ['/schedules', '/schedule'], icon: <CalendarDays className="mx-auto my-auto text-[#4b5c6b] w-[30px] h-[30px]" />}, 
     {name: 'Patients', url: ['/patients', '/patient'],icon: <Accessibility className="mx-auto my-auto text-[#4b5c6b] w-[35px] h-[35px]" />
     }, 
-    {name: 'Employees', url: ['/employees', '/employee'],icon: <BriefcaseBusiness className="mx-auto my-auto text-[#4b5c6b] w-[30px] h-[30px]" />
-    }, 
-    {name: 'Admin', url: ['/telemed-admin', '/video-call'],icon: <Lock className="mx-auto my-auto text-[#4b5c6b] w-[30px] h-[30px]" />
+    {name: 'Admin', url: ['/admin', '/video-call'],icon: <Lock className="mx-auto my-auto text-[#4b5c6b] w-[30px] h-[30px]" />
     },
     {name: 'Telemedicine', url: ['/telemed/appointments', '/video-call', '/telemed/appointments'],icon: <Headset className="mx-auto my-auto text-[#4b5c6b] w-[30px] h-[30px]" />
     }];
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   // console.log(currentTab);
-  console.log(user);
+  //console.log(user);
   return (
     <>
       {/* New Navbar */}

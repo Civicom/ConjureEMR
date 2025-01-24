@@ -18,6 +18,7 @@ import SchedulePage from './pages/Schedule';
 import SchedulesPage from './pages/Schedules';
 import PatientInformationPage from './pages/PatientInformationPage';
 import PatientsPage from './pages/Patients';
+import AdminPage from './pages/Admin';
 import { TelemedAdminPage } from './pages/TelemedAdminPage';
 import { useNavStore } from './state/nav.store';
 import EditInsurance from './telemed/features/telemed-admin/EditInsurance';
@@ -127,6 +128,13 @@ function App(): ReactElement {
                   <Route path="/telemed-admin/states/:state" element={<EditStatePage />} />
                   <Route path={INSURANCES_PATH} element={<TelemedAdminPage />} />
                   <Route path={`${INSURANCES_PATH}/:insurance`} element={<EditInsurance />} />
+
+                  <Route path="/admin" element={<AdminPage />} />
+                  <Route path="/admin/employee/:id" element={<EditEmployeePage />} />
+                  {/* <Route path="/admin/employee/add" element={<AddEmployeePage />} /> */}
+
+
+
                   <Route path="*" element={<Navigate to={'/'} />} />
                   {/* TODO: remove in production */}
                   <Route path="/test" element={<Resources />} />

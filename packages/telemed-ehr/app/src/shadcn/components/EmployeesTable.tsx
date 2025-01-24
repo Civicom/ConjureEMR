@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from 'lucide-react';
+import { ArrowUpDown, ChevronDown, MoreHorizontal, PlusIcon } from 'lucide-react';
 import {
   DropdownMenuContent,
   DropdownMenuItem,
@@ -37,7 +37,7 @@ import { useQuery } from 'react-query';
 
 interface EmployeeFilter {
   provider: boolean;
-  name: string;
+  text: string;
 }
 
 export const columns: ColumnDef<EmployeeDetails>[] = [
@@ -172,7 +172,7 @@ const EmployeesTable = () => {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
-  const [filter, setFilter] = React.useState<EmployeeFilter>({provider: false, name: '',});
+  const [filter, setFilter] = React.useState<EmployeeFilter>({provider: false, text: '',});
   const [employees, setEmployees] = React.useState<EmployeeDetails[]>([]);
 
   const { zambdaClient } = useApiClients();
@@ -191,10 +191,12 @@ const EmployeesTable = () => {
 
     const filteredEmployees = employees.filter((employee: EmployeeDetails) => {
 
-      const name: string = employee.name.toLowerCase();
-      const filterName: string = filter.name.toLowerCase();
 
-      if (filter.name && !name.includes(filterName)) return false;
+      const filterText = filter.text.toLowerCase();
+      const name: string = employee.name.toLowerCase();
+      const email: string = employee.email.toLowerCase();
+
+      if (filter.text && !name.includes(filterText) && !email.includes(filterText)) return false;
       if (filter.provider && !employee.isProvider) return false;
 
       return true;
@@ -230,10 +232,10 @@ const EmployeesTable = () => {
 
   return (
     <div className="w-full">
-      <div className="flex items-center py-4">
-        <Input placeholder="Name" value={filter.name} onChange={
+      <div className="flex items-center gap-2 py-4">
+        <Input placeholder="Name or Email" value={filter.name} onChange={
             (event: React.ChangeEvent<HTMLInputElement> ) => {
-              setFilter({ ...filter, name: event.target.value })
+              setFilter({ ...filter, text: event.target.value })
             }
           }
         />
@@ -251,14 +253,13 @@ const EmployeesTable = () => {
             }>Provider</DropdownMenuCheckboxItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown />
-            </Button>
-          </DropdownMenuTrigger>
-        </DropdownMenu>
+ 
+        <Link to="/admin/employees/add">
+          <Button className="flex items-center bg-red-500 hover:bg-red-600 font-bold">
+            <PlusIcon className="w-4 h-4" />Add Employee
+          </Button>
+        </Link>
+
       </div>
       <div className="rounded-md border bg-white">
         <Table>
@@ -281,7 +282,7 @@ const EmployeesTable = () => {
                 <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      <Link to={`/employee/${row.original.id}`} className="block -m-4 p-4">
+                      <Link to={`/admin/employee/${row.original.id}`} className="block -m-4 p-4">
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </Link>
                     </TableCell>
