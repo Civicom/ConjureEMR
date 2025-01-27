@@ -1,93 +1,10 @@
-import { Box, Tab } from '@mui/material';
 import { ReactElement, useState } from 'react';
-import PageContainer from '../layout/PageContainer';
-import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { ScheduleInformation } from '../components/ScheduleInformation';
-
-// Shadcn
-import { ChangeEvent } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-// import { Download, PlusIcon } from 'lucide-react';
-// import { Link } from 'react-router-dom';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import { Input } from "@/components/ui/input"
-import { ScheduleTable } from '@/components/schedule/ScheduleTable';
+import { ScheduleTable } from '../components/schedule/ScheduleTable';
 
-// demo data for table
-interface Person {
-  id: string
-  name: string
-  email: string
-  role: string
-  status: "Active" | "Inactive"
-}
-const demoData: Person[] = [
-  {
-    id: "1",
-    name: "John Doe",
-    email: "john@example.com",
-    role: "Developer",
-    status: "Active",
-  },
-  {
-    id: "2",
-    name: "Jane Smith",
-    email: "jane@example.com",
-    role: "Designer",
-    status: "Active",
-  },
-  {
-    id: "3",
-    name: "Bob Johnson",
-    email: "bob@example.com",
-    role: "Manager",
-    status: "Inactive",
-  },
-  {
-    id: "4",
-    name: "Alice Brown",
-    email: "alice@example.com",
-    role: "Developer",
-    status: "Active",
-  },
-  {
-    id: "5",
-    name: "Charlie Wilson",
-    email: "charlie@example.com",
-    role: "Designer",
-    status: "Inactive",
-  },
-]
-
-function a11yProps(index: number): { id: string; 'aria-controls': string } {
-  return {
-    id: `tab-${index}`,
-    'aria-controls': `tabpanel-${index}`,
-  };
-}
 
 export default function LocationsPage(): ReactElement {
-  const [tab, setTab] = useState<string>('0');
-
-
-  // table start
   const [searchQuery, setSearchQuery] = useState<string>("")
-
-  const filteredData = demoData.filter((person) =>
-    person.name.toLowerCase().includes(searchQuery.toLowerCase())
-  )
-
-  const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(event.target.value)
-  }
   return (
     <>
       <div className="flex flex-col max-w-7xl mx-auto my-16 px-4">
