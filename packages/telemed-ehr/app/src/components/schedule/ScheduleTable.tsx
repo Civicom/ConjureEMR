@@ -256,7 +256,7 @@ export const ScheduleTable = ({ scheduleType }: ScheduleInformationTableProps): 
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                     id={`search-${scheduleType}`}
-                    placeholder="Search offices..."
+                    placeholder={`Search ${scheduleType}...`}
                     value={searchQuery}
                     onChange={handleSearch}
                     className="pl-8 max-w-sm"
@@ -285,7 +285,7 @@ export const ScheduleTable = ({ scheduleType }: ScheduleInformationTableProps): 
                             <TableRow key={item.id} className="bg-white">
                             <TableCell>
                                 <Link 
-                                to={`/schedule/office/${item.id}`}
+                                to={`/schedule/${scheduleType}/${item.id}`}
                                 className="text-[#D3455B] hover:text-[#b52b40] hover:underline font-bold"
                                 >
                                 {getName(item)}
