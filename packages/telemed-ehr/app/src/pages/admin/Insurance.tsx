@@ -14,8 +14,10 @@ import { PlusIcon } from 'lucide-react';
 import { InsurancePlan } from 'fhir/r4';
 import { useInsurancesQuery } from '@/telemed/features/telemed-admin/telemed-admin.queries';
 
+type PlanStatus = ('draft'|'active'|'retired'|'unknown') | undefined;
+
 interface InsuranceFilter {
-    status?: ('draft'|'active'|'retired'|'unknown') | undefined;
+    status: PlanStatus;
     text: string;
 }
 
@@ -61,8 +63,8 @@ export const columns: ColumnDef<InsurancePlan>[] = [{
         },
     },
 ];
-
-const insurancePlans : InsurancePlan[] = [{
+/*
+let insurancePlans : InsurancePlan[] = [{
     resourceType: 'InsurancePlan',
     name: 'abc', 
     status: 'active'
@@ -72,14 +74,16 @@ const insurancePlans : InsurancePlan[] = [{
     status: 'retired'
 }];
 //const insurancePlans : InsurancePlan[] = [];
+*/
+
 export default function InsurancePage() {
     const [rowSelection, setRowSelection] = React.useState({});
     const [filter, setFilter] = React.useState<InsuranceFilter>({status: undefined, text: '',});
-    //{ insurancePlans, isFetching } = useInsurancesQuery();
+    const { data, isFetching } = useInsurancesQuery();
 
     const tableData : InsurancePlan[] = React.useMemo<InsurancePlan[]>(() => {
 
-        return insurancePlans.filter((insurancePlan: InsurancePlan) => {
+        return data?.filter((insurancePlan: InsurancePlan) => {
 
             const filterText : string = filter.text.toLowerCase();
             const name: string = (insurancePlan.name ?? '').toLowerCase();
@@ -87,8 +91,9 @@ export default function InsurancePage() {
             if (filter.status && insurancePlan.status !== filter.status) return false;
             
             return true;
-        });
-    }, [insurancePlans, filter]);
+        }) || [];
+
+    }, [data, filter]);
 
     const table = useReactTable({
         data: tableData, // Use the transformed data instead of static data
@@ -123,12 +128,13 @@ export default function InsurancePage() {
                             Filter <ChevronDown />
                         </Button>
                     </DropdownMenuTrigger>
-                    {/* status?: ('draft'|'active'|'retired'|'unknown') | undefined; */}
                     <DropdownMenuContent align="end">
-                        <DropdownMenuRadioGroup value={filter.status ?? ''} onValueChange={(value) => setFilter({ ...filter, status: value as ('draft'|'active'|'retired'|'unknown') | undefined })}>
+                        <DropdownMenuRadioGroup value={filter.status ?? ''} onValueChange={(value) => setFilter({ ...filter, status: value as PlanStatus})}>
                             <DropdownMenuRadioItem value=''>Any</DropdownMenuRadioItem>
                             <DropdownMenuRadioItem value='active'>Active</DropdownMenuRadioItem>
                             <DropdownMenuRadioItem value='retired'>Retired</DropdownMenuRadioItem>
+                            <DropdownMenuRadioItem value='draft'>Draft</DropdownMenuRadioItem>
+                            <DropdownMenuRadioItem value='unknown'>Unknown</DropdownMenuRadioItem>  
                         </DropdownMenuRadioGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
