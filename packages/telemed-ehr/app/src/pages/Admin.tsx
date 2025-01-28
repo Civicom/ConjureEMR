@@ -1,8 +1,10 @@
-import { default as React, ReactElement, useState } from 'react';
+import { default as React, ReactElement } from 'react';
 import { TabsList, TabsTrigger, TabsContent, Tabs } from '@/components/ui/tabs';
-import EmployeesTable from '@/shadcn/components/EmployeesTable';
 import useOttehrUser, { OttehrUser } from '../hooks/useOttehrUser';
 import { RoleType } from '@/types/types';
+import EmployeesPage from '@/pages/admin/Employees';
+import StatesPage from '@/pages/admin/States';
+import InsurancePage from '@/pages/admin/Insurance';
 
 export default function AdminPage(): ReactElement {
     
@@ -20,7 +22,9 @@ export default function AdminPage(): ReactElement {
                     <TabsTrigger value="states" className="flex justify-center text-center">States</TabsTrigger>
                     <TabsTrigger value="settings" className="flex justify-center text-center">Settings</TabsTrigger>
                 </TabsList>
-                <TabsContent value="employees" className="my-8"><EmployeesTable /></TabsContent>
+                <TabsContent value="employees" className="my-8"><EmployeesPage /></TabsContent>
+                <TabsContent value="insurance" className="my-8"><InsurancePage /></TabsContent>
+                <TabsContent value="states" className="my-8"><StatesPage /></TabsContent>
             </Tabs>
             </div>
         </div>

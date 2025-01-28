@@ -40,8 +40,7 @@ interface EmployeeFilter {
   text: string;
 }
 
-export const columns: ColumnDef<EmployeeDetails>[] = [
-  {
+export const columns: ColumnDef<EmployeeDetails>[] = [{
     id: 'select',
     header: ({ table }) => (
       <Checkbox
@@ -166,7 +165,7 @@ export const columns: ColumnDef<EmployeeDetails>[] = [
   },
 ];
 
-const EmployeesTable = () => {
+const EmployeesPage = () => {
 
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -322,4 +321,4 @@ const EmployeesTable = () => {
   );
 };
 
-export default EmployeesTable;
+export default EmployeesPage;

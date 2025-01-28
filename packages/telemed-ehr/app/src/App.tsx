@@ -119,8 +119,6 @@ function App(): ReactElement {
                   <Route path="/schedules" element={<SchedulesPage />} />
                   <Route path="/schedule/:schedule-type/add" element={<AddSchedulePage />} />
                   <Route path="/schedule/:schedule-type/:id" element={<SchedulePage />} />
-                  <Route path="/employees" element={<EmployeesPage />} />
-                  <Route path="/employee/:id" element={<EditEmployeePage />} />
                   <Route path="/patients" element={<PatientsPage />} />
                   <Route path="/patient/:id" element={<PatientInformationPage />} />
                   <Route path="/telemed-admin" element={<Navigate to={INSURANCES_PATH} />} />
@@ -132,6 +130,8 @@ function App(): ReactElement {
                   <Route path="/admin" element={<AdminPage />} />
                   <Route path="/admin/employee/:id" element={<EditEmployeePage />} />
                   {/* <Route path="/admin/employee/add" element={<AddEmployeePage />} /> */}
+                  <Route path={`/admin/insurance/:insurance`} element={<EditInsurance />} />
+                  <Route path="/admin/states/:state" element={<EditStatePage />} />
 
 
 
