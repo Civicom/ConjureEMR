@@ -130,6 +130,8 @@ function App(): ReactElement {
                   <Route path="/admin" element={<AdminPage />} />
                   <Route path="/admin/employee/:id" element={<EditEmployeePage />} />
                   {/* <Route path="/admin/employee/add" element={<AddEmployeePage />} /> */}
+                  <Route path={`/admin/insurance/:insurance`} element={<EditInsurance />} />
+                  <Route path="/admin/states/:state" element={<EditStatePage />} />
 
 
 

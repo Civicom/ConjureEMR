@@ -6,6 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { AllStates, AllStatesToNames, State, StateType } from '@/types/types';
 import { useStatesQuery } from '@/telemed/features/telemed-admin/telemed-admin.queries';
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 type StateDetails = {
   state: StateType;
@@ -121,7 +122,9 @@ export default function StatesPage() {
                 <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        <Link to={`/admin/states/${row.original.state}`} className="block -m-4 p-4">
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </Link>
                     </TableCell>
                   ))}
                 </TableRow>

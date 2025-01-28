@@ -63,18 +63,6 @@ export const columns: ColumnDef<InsurancePlan>[] = [{
         },
     },
 ];
-/*
-let insurancePlans : InsurancePlan[] = [{
-    resourceType: 'InsurancePlan',
-    name: 'abc', 
-    status: 'active'
-}, {
-    resourceType: 'InsurancePlan',
-    name: 'cde', 
-    status: 'retired'
-}];
-//const insurancePlans : InsurancePlan[] = [];
-*/
 
 export default function InsurancePage() {
     const [rowSelection, setRowSelection] = React.useState({});
@@ -169,7 +157,9 @@ export default function InsurancePage() {
                                 <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell key={cell.id}>
-                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                            <Link to={`/admin/insurance/${row.original.id}`} className="block -m-4 p-4">
+                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                            </Link>
                                         </TableCell>
                                     ))}
                                 </TableRow>
