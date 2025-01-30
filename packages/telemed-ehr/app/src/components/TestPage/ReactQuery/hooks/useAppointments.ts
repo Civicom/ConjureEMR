@@ -55,8 +55,6 @@ export function useAppointments({ pageSize, currentPage = 1, filters = {} }: Use
         return [];
       }
 
-      /** Get all appointments if no pageSize is provided */
-
       //   TODO: add date filters to calendar and logs
       const searchParams = [
         { name: 'date', value: 'ge2025-01-01T00:00:00.000-05:00' },
@@ -67,16 +65,7 @@ export function useAppointments({ pageSize, currentPage = 1, filters = {} }: Use
       if (pageSize) {
         searchParams.push({ name: '_count', value: pageSize.toString() });
         searchParams.push({ name: '_offset', value: ((currentPage - 1) * pageSize).toString() });
-        // month of January
       }
-
-      console.log('date ge');
-
-      //   else {
-      //     const pageSize = 200;
-      //     searchParams.push({ name: '_count', value: pageSize.toString() });
-      //     searchParams.push({ name: '_offset', value: ((currentPage - 1) * pageSize).toString() });
-      //   }
 
       const response = await fhirClient.searchResources<Appointment>({
         resourceType: 'Appointment',
