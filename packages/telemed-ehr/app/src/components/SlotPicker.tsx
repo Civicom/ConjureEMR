@@ -51,10 +51,13 @@ const tabProps = (
 const nextAvailableFrom = (firstDate: DateTime, slotDataFHIR: string[], timezone: string): DateTime | undefined => {
   const nextDaySlot = slotDataFHIR.find((slot) => {
     const dt = DateTime.fromISO(slot, { zone: timezone });
-    if (dt.ordinal === firstDate.ordinal) {
-      return false;
-    }
-    return dt > firstDate;
+    // if (dt.ordinal === firstDate.ordinal) {
+    //   return false;
+    // }
+    // return dt > firstDate;
+
+     // Compare dates only (not times) to find slots on different days
+     return dt.startOf('day') > firstDate.startOf('day');
   });
 
   if (nextDaySlot) {
@@ -69,6 +72,7 @@ interface SlotPickerProps {
   timezone: string;
   selectedSlot: string | undefined;
   setSelectedSlot: (slot: string | undefined) => void;
+  closedDates: string[] | undefined;
 }
 
 const SlotPicker = ({
@@ -77,6 +81,7 @@ const SlotPicker = ({
   timezone,
   selectedSlot,
   setSelectedSlot,
+  closedDates,
 }: SlotPickerProps): JSX.Element => {
   const theme = useTheme();
   const [currentTab, setCurrentTab] = useState(0);
@@ -84,7 +89,13 @@ const SlotPicker = ({
 
   const [slotsList, daySlotsMap] = useMemo(() => {
     if (slotData) {
-      const slots = [...slotData];
+      // Filter out slots that fall on closed dates
+      const slots = slotData.filter(slot => {
+        const slotDate = DateTime.fromISO(slot).toFormat('yyyy-MM-dd');
+        return !closedDates?.includes(slotDate);
+      });
+    // if (slotData) {
+    //   const slots = [...slotData];
 
       // This maps days to an array of slots
       const map: { [ord: number]: string[] } = slots.reduce(
@@ -104,7 +115,7 @@ const SlotPicker = ({
       return [slots, map];
     }
     return [[], {}];
-  }, [timezone, slotData]);
+  }, [timezone, slotData, closedDates]);
 
   const { firstAvailableDay, secondAvailableDay } = useMemo(() => {
     let firstAvailableDay: DateTime | undefined = undefined;
@@ -116,6 +127,7 @@ const SlotPicker = ({
 
     firstAvailableDay = createLocalDateTime(DateTime.fromISO(slotsList[0]), timezone);
     const firstSlot = slotsList[0];
+    console.log('firstSlot', firstSlot);
     const firstTime = DateTime.fromISO(firstSlot)?.setZone(timezone).toISODate();
     const currentExistingTime = currentTime?.setZone(timezone)?.toISODate();
     if (!firstTime || !currentExistingTime) {
@@ -129,6 +141,8 @@ const SlotPicker = ({
         setNextDay(false);
       }
     }
+    console.log('firstAvailableDay', firstAvailableDay);
+    console.log('secondAvailableDay', secondAvailableDay);
     return { firstAvailableDay, secondAvailableDay };
   }, [slotsList, timezone]);
 
@@ -258,7 +272,8 @@ const SlotPicker = ({
                   }}
                 >
                   <Tab
-                    label={nextDay ? 'Tomorrow' : 'Today'}
+                    // label={nextDay ? 'Today' : 'Tomorrow'}
+                    label='Latest Available'
                     {...tabProps(0)}
                     sx={{
                       color: currentTab == 0 ? theme.palette.secondary.main : theme.palette.text.secondary,
@@ -270,7 +285,7 @@ const SlotPicker = ({
                   />
                   {secondAvailableDay && (
                     <Tab
-                      label="Tomorrow"
+                      label="Next Available"
                       {...tabProps(1)}
                       sx={{
                         color: currentTab == 1 ? theme.palette.secondary.main : theme.palette.text.secondary,
@@ -284,6 +299,7 @@ const SlotPicker = ({
                 </Tabs>
               </Box>
               <Box>
+                {/* {closedDates ? closedDates : 'None Scheduled'} */}
                 <TabPanel value={currentTab} index={0} dir={theme.direction}>
                   <Typography variant="h3" sx={{ textAlign: 'center' }}>
                     {firstAvailableDay?.toFormat(DATE_FULL_NO_YEAR)}
