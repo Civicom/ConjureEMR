@@ -29,8 +29,9 @@ export default function Navbar(): ReactElement {
     // }, 
     {name: 'Admin', url: ['/telemed-admin', '/video-call'],icon: <Lock className="mx-auto my-auto text-[#4b5c6b] w-[30px] h-[30px]" />
     },
-    {name: 'Telemedicine', url: ['/telemed/appointments', '/video-call', '/telemed/appointments'],icon: <Headset className="mx-auto my-auto text-[#4b5c6b] w-[30px] h-[30px]" />
-    }];
+    // {name: 'Telemedicine', url: ['/telemed/appointments', '/video-call', '/telemed/appointments'],icon: <Headset className="mx-auto my-auto text-[#4b5c6b] w-[30px] h-[30px]" />
+    // }
+  ];
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   console.log(user);
   return (
