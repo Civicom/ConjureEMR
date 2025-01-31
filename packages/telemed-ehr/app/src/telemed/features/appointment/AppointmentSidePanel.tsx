@@ -7,7 +7,6 @@ import PersonAddAltOutlinedIcon from '@mui/icons-material/PersonAddAltOutlined';
 import { LoadingButton } from '@mui/lab';
 import {
   Box,
-  Button,
   Divider,
   Drawer,
   IconButton,
@@ -64,8 +63,10 @@ import {
   Phone,
   UserRound,
   Video,
+  Pencil,
 } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { Skeleton, } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -267,7 +268,7 @@ export const AppointmentSidePanel: FC<AppointmentSidePanelProps> = ({ appointmen
       <Toolbar />
 
       <Card className="pb-2 xs:w-full lg:w-auto">
-        <CardHeader>
+        <CardHeader className="flex items-center justify-center">
           {false ? (
             <Skeleton className="bg-gray-200 w-16 h-16 rounded-full mb-2" />
           ) : (
@@ -296,7 +297,14 @@ export const AppointmentSidePanel: FC<AppointmentSidePanelProps> = ({ appointmen
                 {false && section.title ? (
                   <Skeleton className="bg-gray-200 w-48 h-8" />
                 ) : section.title ? (
-                  <h1 className="text-lg font-bold py-1">{section.title}</h1>
+                  <div className="flex items-center justify-between">
+                    <h1 className="text-lg font-bold py-1">{section.title}</h1>
+                    {section.title === 'Patient Information' && !isReadOnly && (                
+                      <Button variant="outline" size="icon" className="border border-blue-500">
+                        <Pencil className="text-blue-500" />
+                      </Button>
+                    )}
+                  </div>
                 ) : (
                   ''
                 )}
@@ -328,7 +336,7 @@ export const AppointmentSidePanel: FC<AppointmentSidePanelProps> = ({ appointmen
         </CardContent>
       </Card>
 
-
+      {/* Old Code*/}
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 3, overflow: 'auto' }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
@@ -421,7 +429,7 @@ export const AppointmentSidePanel: FC<AppointmentSidePanelProps> = ({ appointmen
 
           {/* <Typography variant="body2">Location: {location.address?.state}</Typography> */}
 
-          <Typography variant="body2">Address: {address}</Typography>
+          <Typography variant="body2">Address: {addressStr}</Typography>
 
           <Typography variant="body2">{reasonForVisit && addSpacesAfterCommas(reasonForVisit)}</Typography>
         </Box>

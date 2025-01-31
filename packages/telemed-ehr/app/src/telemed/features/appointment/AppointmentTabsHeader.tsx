@@ -25,7 +25,7 @@ export const AppointmentTabsHeader: FC = () => {
   return (
     <>
       <div>
-        <div id="navbar-center-container" className='flex flex-row mt-[14px] select-none transition-all duration-300 ease-in-out h-full'>
+        <div className='flex flex-row mt-[14px] select-none transition-all duration-300 ease-in-out h-full'>
             {menuItems.map((menuItem) => (              
                 <div className={`flex flex-col pb-[0.75rem] px-[1rem] justify-center items-center w-fit border-b-4 ${menuItem.value == currentTab ? 'border-[#D3455B]' : 'border-[#fff]'}`} key={menuItem.value}
                   onClick={() => handleTabChange(menuItem.value)}>
