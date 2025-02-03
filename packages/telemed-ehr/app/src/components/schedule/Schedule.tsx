@@ -2,19 +2,16 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import {
   capitalize,
 } from '@mui/material';
-// import Alert, { AlertColor } from '@mui/material/Alert';
 import React, { ReactElement } from 'react';
 import { ScheduleCapacity } from './ScheduleCapacity';
 import { HealthcareService, Location, LocationHoursOfOperation, Practitioner } from 'fhir/r4';
 import { ScheduleOverrides } from './ScheduleOverrides';
-import { otherColors } from '../../CustomThemeProvider';
 import { DateTime } from 'luxon';
 import { Operation } from 'fast-json-patch';
 import { Closure, Day, Overrides, ScheduleExtension, Weekday, Weekdays } from '../../types/types';
 import { useApiClients } from '../../hooks/useAppClients';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { ReTabsSquare, ReTabsSquareList, ReTabsSquareTrigger, ReTabsSquareContent } from "../ui/retabssquare";
-// import { ToastMessage } from '../../pages/Schedule';
 import { ToastMessage , createToast}  from '../../pages/Schedule';
 import { useState, useMemo } from 'react';
 
@@ -58,72 +55,6 @@ function InfoForDay({ day, setDay, updateItem, loading }: InfoForDayProps): Reac
   function createOpenCloseSelectField(type: 'Open' | 'Close', day: Day): ReactElement {
     const typeLowercase = type.toLocaleLowerCase();
     return (
-      // Old code
-      // <FormControl sx={{ marginRight: 2 }}>
-      //   <InputLabel id={`${typeLowercase}-label`}>{type}</InputLabel>
-      //   <Select
-      //     labelId={`${typeLowercase}-label`}
-      //     id={typeLowercase}
-      //     value={type === 'Open' ? open : close}
-      //     label={type}
-      //     disabled={!workingDay}
-      //     onChange={(newTime) => {
-      //       const updatedTime = Number(newTime.target.value);
-      //       const dayTemp = day;
-      //       if (type === 'Open') {
-      //         setOpen(updatedTime);
-      //         dayTemp.open = updatedTime;
-      //         setDay(dayTemp);
-      //       } else if (type === 'Close') {
-      //         setClose(updatedTime);
-      //         dayTemp.close = updatedTime;
-      //         setDay(dayTemp);
-      //       }
-      //     }}
-      //     sx={{
-      //       width: 200,
-      //       maxWidth: '100%',
-      //       flexShrink: 1,
-      //     }}
-      //     MenuProps={{
-      //       PaperProps: {
-      //         sx: {
-      //           '& .MuiMenuItem-root:hover': {
-      //             backgroundColor: otherColors.selectMenuHover,
-      //           },
-      //         },
-      //       },
-      //     }}
-      //   >
-      //     {type === 'Open' && <MenuItem value={0}>12 AM</MenuItem>}
-      //     <MenuItem value={1}>1 AM</MenuItem>
-      //     <MenuItem value={2}>2 AM</MenuItem>
-      //     <MenuItem value={3}>3 AM</MenuItem>
-      //     <MenuItem value={4}>4 AM</MenuItem>
-      //     <MenuItem value={5}>5 AM</MenuItem>
-      //     <MenuItem value={6}>6 AM</MenuItem>
-      //     <MenuItem value={7}>7 AM</MenuItem>
-      //     <MenuItem value={8}>8 AM</MenuItem>
-      //     <MenuItem value={9}>9 AM</MenuItem>
-      //     <MenuItem value={10}>10 AM</MenuItem>
-      //     <MenuItem value={11}>11 AM</MenuItem>
-      //     <MenuItem value={12}>12 PM</MenuItem>
-      //     <MenuItem value={13}>1 PM</MenuItem>
-      //     <MenuItem value={14}>2 PM</MenuItem>
-      //     <MenuItem value={15}>3 PM</MenuItem>
-      //     <MenuItem value={16}>4 PM</MenuItem>
-      //     <MenuItem value={17}>5 PM</MenuItem>
-      //     <MenuItem value={18}>6 PM</MenuItem>
-      //     <MenuItem value={19}>7 PM</MenuItem>
-      //     <MenuItem value={20}>8 PM</MenuItem>
-      //     <MenuItem value={21}>9 PM</MenuItem>
-      //     <MenuItem value={22}>10 PM</MenuItem>
-      //     <MenuItem value={23}>11 PM</MenuItem>
-      //     {type === 'Close' && <MenuItem value={24}>12 AM</MenuItem>}
-      //   </Select>
-      // </FormControl>
-
-      // New code
       <div className="mr-8">
         <label 
           htmlFor={typeLowercase}
@@ -186,53 +117,6 @@ function InfoForDay({ day, setDay, updateItem, loading }: InfoForDayProps): Reac
     const bufferValue = type === 'Open' ? (openingBuffer ?? '') : (closingBuffer ?? '');
 
     return (
-      // Old code
-      // <FormControl sx={{ marginRight: 2 }}>
-      //   <InputLabel id={`${typeLowercase}-buffer-label`}>{typeVerb} Buffer</InputLabel>
-      //   <Select
-      //     labelId={`${typeLowercase}-buffer-label`}
-      //     id={`${typeLowercase}-buffer`}
-      //     value={bufferValue}
-      //     defaultValue={bufferValue}
-      //     label={`${typeVerb} Buffer`}
-      //     disabled={!workingDay}
-      //     onChange={(newNumber) => {
-      //       const updatedNumber = Number(newNumber.target.value);
-      //       const dayTemp = day;
-      //       if (type === 'Open') {
-      //         setOpeningBuffer(updatedNumber);
-      //         dayTemp.openingBuffer = updatedNumber;
-      //         setDay(dayTemp);
-      //       } else if (type === 'Close') {
-      //         setClosingBuffer(updatedNumber);
-      //         dayTemp.closingBuffer = updatedNumber;
-      //         setDay(dayTemp);
-      //       }
-      //     }}
-      //     sx={{
-      //       width: 200,
-      //       maxWidth: '100%',
-      //       flexShrink: 1,
-      //     }}
-      //     MenuProps={{
-      //       PaperProps: {
-      //         sx: {
-      //           '& .MuiMenuItem-root:hover': {
-      //             backgroundColor: otherColors.selectMenuHover,
-      //           },
-      //         },
-      //       },
-      //     }}
-      //   >
-      //     <MenuItem value={0}>0 mins</MenuItem>
-      //     <MenuItem value={15}>15 mins</MenuItem>
-      //     <MenuItem value={30}>30 mins</MenuItem>
-      //     <MenuItem value={60}>60 mins</MenuItem>
-      //     <MenuItem value={90}>90 mins</MenuItem>
-      //   </Select>
-      // </FormControl>
-
-      // New code
       <div className="mr-8">
         <label 
           htmlFor={`${typeLowercase}-buffer`}

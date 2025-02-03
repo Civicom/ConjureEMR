@@ -257,8 +257,8 @@ export const ScheduleTable = ({ scheduleType }: ScheduleInformationTableProps): 
                     <Input
                     id={`search-${scheduleType}`}
                     placeholder={`Search ${scheduleType}...`}
-                    value={searchQuery}
-                    onChange={handleSearch}
+                    value={searchText}
+                    onChange={handleChangeSearchText}
                     className="pl-8 max-w-sm"
                     />
                 </div>

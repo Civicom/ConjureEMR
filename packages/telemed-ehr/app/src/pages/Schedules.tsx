@@ -5,7 +5,6 @@ import { CalendarDays } from 'lucide-react';
 
 
 export default function LocationsPage(): ReactElement {
-  const [searchQuery, setSearchQuery] = useState<string>("")
   return (
     <>
       <div className="flex flex-col max-w-7xl mx-auto my-16 px-4">
