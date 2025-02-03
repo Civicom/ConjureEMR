@@ -37,10 +37,26 @@ import { CreateAppointmentParameters, PersonSex, VisitType } from '../types/type
 import { PRIVATE_EXTENSION_BASE_URL } from 'ehr-utils';
 import SlotPicker from '../components/SlotPicker';
 
+import { OVERRIDE_DATE_FORMAT } from '../helpers/formatDateTime';
+
 type SlotLoadingState =
   | { status: 'initial'; input: undefined }
   | { status: 'loading'; input: undefined }
   | { status: 'loaded'; input: string };
+
+// added for closures
+interface ScheduleExtension {
+  schedule: any;
+  scheduleOverrides: any;
+  closures?: Closure[];
+}
+
+// added for closures
+interface Closure {
+  start: string;
+  end: string;
+  type: 'day' | 'period';
+}
 
 export default function AddPatient(): JSX.Element {
   const [selectedLocation, setSelectedLocation] = useState<Location | undefined>(undefined);
@@ -74,6 +90,8 @@ export default function AddPatient(): JSX.Element {
     prefillForSelected: false,
     forcePatientSearch: true,
   });
+  const [closedDates, setClosedDates] = useState<Array<string> | undefined>(undefined);
+  console.log("locationWithSlotData", locationWithSlotData);
 
   // general variables
   const theme = useTheme();
@@ -85,6 +103,59 @@ export default function AddPatient(): JSX.Element {
   const handleReasonsForVisitChange = (newValues: string[]): void => {
     setValidReasonForVisit(newValues.join(', ').length <= MAXIMUM_CHARACTER_LIMIT);
     setReasonForVisit(newValues);
+  };
+
+  // get closed dates for the selected location yyyy-MM-dd
+  const getItemOverrideInformation = (item: Location | undefined): string[] => {
+    if (!item) {
+      console.log("No location selected");
+      return [];
+    }
+    
+    const extensionTemp = item.extension;
+    const extensionSchedule = extensionTemp?.find(
+      (ext) => ext.url === 'https://fhir.zapehr.com/r4/StructureDefinitions/schedule'
+    )?.valueString;
+  
+    if (extensionSchedule) {
+      try {
+        const parsedSchedule = JSON.parse(extensionSchedule) as ScheduleExtension;
+        const { closures } = parsedSchedule;
+        const closureDatesSet = new Set<string>(); // Using Set to automatically handle duplicates
+        
+        if (closures) {
+          closures.forEach(closure => {
+            const startDate = DateTime.fromFormat(closure.start, OVERRIDE_DATE_FORMAT);
+            
+            if (closure.type === 'one-day') {
+              closureDatesSet.add(startDate.toFormat('yyyy-MM-dd'));
+            } else if (closure.type === 'period') {
+              const endDate = DateTime.fromFormat(closure.end, OVERRIDE_DATE_FORMAT);
+              let currentDate = startDate;
+              
+              while (currentDate <= endDate) {
+                closureDatesSet.add(currentDate.toFormat('yyyy-MM-dd'));
+                currentDate = currentDate.plus({ days: 1 });
+              }
+            }
+          });
+        }
+        
+        // Convert Set back to array and sort by date
+        const closureDates = Array.from(closureDatesSet).sort((a, b) => {
+          const dateA = DateTime.fromFormat(a, 'yyyy-MM-dd');
+          const dateB = DateTime.fromFormat(b, 'yyyy-MM-dd');
+          return dateA.valueOf() - dateB.valueOf();
+        });
+        
+        console.log("Generated unique closure dates:", closureDates);
+        return closureDates;
+      } catch (error) {
+        console.error("Error parsing schedule extension:", error);
+        return [];
+      }
+    }
+    return [];
   };
 
   useEffect(() => {
@@ -123,6 +194,10 @@ export default function AddPatient(): JSX.Element {
     }
     void fetchLocationWithSlotData({ slug: locationSlug, locationState, scheduleType: 'location' }, zambdaIntakeClient);
   }, [selectedLocation, loadingSlotState, zambdaIntakeClient]);
+
+  useEffect(() => {
+    setClosedDates(getItemOverrideInformation(selectedLocation));
+  }, [selectedLocation]);
 
   // handle functions
   const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
@@ -215,7 +290,7 @@ export default function AddPatient(): JSX.Element {
       }
     }
   };
-  // console.log(slot);
+  console.log("Closed dates for location:", closedDates);
 
   const handlePatientSearch = async (e: any): Promise<void> => {
     e.preventDefault();
@@ -333,7 +408,10 @@ export default function AddPatient(): JSX.Element {
                     renderInputProps={{ disabled: false }}
                   />
                 </Box>
-
+                <Typography variant="h4" color="primary.dark">
+                  {/* {getItemOverrideInformation(selectedLocation) ? getItemOverrideInformation(selectedLocation) : 'None Scheduled'} */}
+                  {/* {closedDates ? closedDates : 'None Scheduled'} */}
+                </Typography>
                 {/* Patient information */}
                 <Box>
                   <Typography variant="h4" color="primary.dark" sx={{ marginTop: 4 }}>
@@ -633,6 +711,7 @@ export default function AddPatient(): JSX.Element {
                         timezone={locationWithSlotData?.timezone || 'Undefined'}
                         selectedSlot={slot}
                         setSelectedSlot={setSlot}
+                        closedDates={closedDates}
                       />
                     )}
                   </Box>
