@@ -421,10 +421,11 @@ export default function SchedulePage(): ReactElement {
               </p>
             )}
             <ToastProvider>
-              <Tabs defaultValue="schedule" className="">
+              <Tabs defaultValue="schedule" className="mt-4">
                 <TabsList>
                   <TabsTrigger value="schedule">Schedule</TabsTrigger>
-                  <TabsTrigger value="general">General</TabsTrigger>
+                  {scheduleType === 'office' && <TabsTrigger value="general">General</TabsTrigger>}
+                  
                 </TabsList>
                 
                 <TabsContent value="schedule" className="pt-6">

@@ -14,8 +14,8 @@ export default function LocationsPage(): ReactElement {
             <div className="flex justify-between items-center">
               <div className="space-y-2">
                 <div className="flex flex-row items-center gap-2">
-
-                <CalendarDays className="my-auto text-[#202020] w-[30px] h-[30px]" />
+                <h1 className='text-[30px]'>📅</h1>
+                {/* <CalendarDays className="my-auto text-[#202020] w-[30px] h-[30px]" /> */}
                 <h1 className="text-3xl font-bold">Schedules</h1>
                 </div>
                 <p className="text-md text-muted-foreground">View and manage your Schedules</p>
