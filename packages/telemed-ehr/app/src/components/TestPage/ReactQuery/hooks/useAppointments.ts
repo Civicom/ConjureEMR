@@ -21,6 +21,40 @@ export interface AppointmentWithDetails extends Appointment {
   location?: Location[];
 }
 
+// Create a type for date filter combinations
+type DateFilters = {
+  start?: string;
+  end?: string;
+};
+
+const buildDateSearchParams = (filters: DateFilters) => {
+  const searchParams = [];
+
+  // Helper to format end date with end-of-day timestamp
+  const formatEndDate = (date: string) => `le${date.split('T')[0]}T23:59:59.000-05:00`;
+
+  // Add date filters if they exist
+  if (filters.start) {
+    searchParams.push({ name: 'date', value: `ge${filters.start}` });
+    console.log('start ge', filters.start);
+  }
+
+  if (filters.end) {
+    searchParams.push({ name: 'date', value: formatEndDate(filters.end) });
+  }
+
+  console.group('searchParams');
+  console.log(searchParams);
+  console.log(filters.start);
+  console.log(filters.end);
+  console.groupEnd();
+
+  // Always sort by date in descending order
+  searchParams.push({ name: '_sort', value: 'date' });
+
+  return searchParams;
+};
+
 export function useAppointments({ pageSize, currentPage = 1, filters = {} }: UseAppointmentsParams) {
   const { fhirClient } = useApiClients() as { fhirClient: FhirClient };
 
@@ -33,6 +67,10 @@ export function useAppointments({ pageSize, currentPage = 1, filters = {} }: Use
         const response = await fhirClient.searchResourcesReturnBundle<Bundle>({
           resourceType: 'Appointment',
           searchParams: [
+            ...buildDateSearchParams({
+              start: filters.start,
+              end: filters.end,
+            }),
             { name: '_total', value: 'accurate' },
             { name: '_count', value: '10' },
             // Add filter params here when implemented
@@ -49,22 +87,45 @@ export function useAppointments({ pageSize, currentPage = 1, filters = {} }: Use
     },
   });
 
-  const appointmentsQuery = useQuery(['appointments', currentPage, pageSize, filters], async () => {
+  const appointmentsQuery = useQuery(['appointments', pageSize, currentPage, filters], async () => {
     try {
       if (!fhirClient) {
         return [];
       }
 
-      //   TODO: add date filters to calendar and logs
-      const searchParams = [
-        { name: 'date', value: 'ge2025-01-01T00:00:00.000-05:00' },
-        { name: 'date', value: 'le2025-01-31T23:59:59.999-05:00' },
-        { name: '_sort', value: '-date' },
-      ];
+      const searchParams = [];
 
+      // Add date filters
+      searchParams.push(
+        ...buildDateSearchParams({
+          start: filters.start,
+          end: filters.end,
+        }),
+      );
+
+      // Handle pagination
       if (pageSize) {
-        searchParams.push({ name: '_count', value: pageSize.toString() });
-        searchParams.push({ name: '_offset', value: ((currentPage - 1) * pageSize).toString() });
+        searchParams.push(
+          { name: '_count', value: pageSize.toString() },
+          { name: '_offset', value: ((currentPage - 1) * pageSize).toString() },
+        );
+      }
+
+      // Handle other filters
+      if (filters.status) {
+        searchParams.push({ name: 'status', value: filters.status });
+      }
+
+      if (filters.provider) {
+        searchParams.push({ name: 'practitioner', value: filters.provider });
+      }
+
+      if (filters.patient) {
+        searchParams.push({ name: 'patient', value: filters.patient });
+      }
+
+      if (filters.searchTerm) {
+        searchParams.push({ name: '_content', value: filters.searchTerm });
       }
 
       const response = await fhirClient.searchResources<Appointment>({

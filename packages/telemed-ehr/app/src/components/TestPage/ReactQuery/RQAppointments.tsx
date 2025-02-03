@@ -24,6 +24,8 @@ import { useAppointments } from './hooks/useAppointments';
 import { AppointmentListView } from '@/components/appointments/AppointmentListView';
 import { DateTime } from 'luxon';
 import { getAppointments } from '@/api/api';
+import { isAfter, isBefore } from 'date-fns';
+import { useLocation } from 'react-router-dom';
 
 interface AppointmentInfo extends Appointment {
   office: string;
@@ -32,46 +34,109 @@ interface AppointmentInfo extends Appointment {
 }
 
 const RQAppointmentsPage = () => {
+  const location = useLocation();
+
+  const getDefaultTab = () => {
+    if (location.pathname.includes('/test/rq/logs')) return 'logs';
+    if (location.pathname.includes('/test/rq/calendar')) return 'calendar';
+    return 'calendar';
+  };
+
   return (
-    <div className="flex flex-col mx-auto my-12 max-w-7xl px-8">
-      <div className="flex justify-between items-center">
+    <div className="h-[90dvh]">
+      {/* <div className="flex justify-between items-center">
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl font-bold">Appointments</h1>
           <p className="text-sm text-gray-500">View and manage your appointments here.</p>
         </div>
-      </div>
-      <div className="grid gap-4">
+      </div> */}
+
+      <RQBigCalender />
+
+      {/* <div className="grid gap-4">
         <div className="space-y-4 py-8">
-          <Tabs defaultValue="calendar">
+          <Tabs defaultValue={getDefaultTab()}>
             <TabsList>
               <TabsTrigger value="calendar">Calendar</TabsTrigger>
               <TabsTrigger value="logs">Logs</TabsTrigger>
             </TabsList>
-            <TabsContent value="calendar">
-              <RQBigCalender />
-            </TabsContent>
+            <TabsContent value="calendar"></TabsContent>
             <TabsContent value="logs">
               <LogsView />
             </TabsContent>
           </Tabs>
         </div>
       </div>
-      <ZambdaAppointments />
+      <ZambdaAppointments /> */}
     </div>
   );
 };
 
-const LogsView = () => {
+interface Filters {
+  start: string | undefined;
+  end: string | undefined;
+  searchTerm: string;
+  status: string;
+  provider: string;
+  patient: string;
+}
+
+export const LogsView = () => {
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<Filters>({
     searchTerm: '',
     status: '',
     provider: '',
     patient: '',
-    start: '',
-    end: '',
+    start: undefined,
+    end: undefined,
   });
+
+  // Add state for date validation errors
+  const [dateErrors, setDateErrors] = useState({
+    start: false,
+    end: false,
+  });
+
+  const validateDates = (startDate: Date | undefined, endDate: Date | undefined) => {
+    if (!startDate || !endDate) return true;
+    return !isAfter(startDate, endDate);
+  };
+
+  const handleStartDateChange = (date: Date | undefined) => {
+    const endDate = filters.end ? new Date(filters.end) : undefined;
+    const isValid = validateDates(date, endDate);
+
+    setDateErrors((prev) => ({
+      ...prev,
+      start: !isValid,
+      end: !isValid,
+    }));
+
+    setFilters((prev) => ({
+      ...prev,
+      start: date ? date.toISOString() : undefined,
+    }));
+  };
+
+  const handleEndDateChange = (date: Date | undefined) => {
+    const startDate = filters.start ? new Date(filters.start) : undefined;
+    const isValid = validateDates(startDate, date);
+
+    setDateErrors((prev) => ({
+      ...prev,
+      start: !isValid,
+      end: !isValid,
+    }));
+
+    setFilters((prev) => ({
+      ...prev,
+      end: date ? date.toISOString() : '',
+    }));
+  };
+
+  console.log('logs filters', filters);
 
   const { appointments, isLoading, totalEntries } = useAppointments({
     pageSize,
@@ -103,6 +168,27 @@ const LogsView = () => {
             </TabsList>
           </Tabs>
         </div> */}
+        {/* Filters */}
+        <div className="grid grid-cols-2 gap-4 max-w-xs">
+          Start{' '}
+          <DatePicker
+            value={filters.start ? new Date(filters.start) : undefined}
+            onChange={handleStartDateChange}
+            placeholder="Start Date"
+            maxDate={filters.end ? new Date(filters.end) : undefined}
+            error={dateErrors.start}
+            errorMessage={dateErrors.start ? 'Start date cannot be after end date' : undefined}
+          />
+          End{' '}
+          <DatePicker
+            value={filters.end ? new Date(filters.end) : undefined}
+            onChange={handleEndDateChange}
+            placeholder="End Date"
+            minDate={filters.start ? new Date(filters.start) : undefined}
+            error={dateErrors.end}
+            errorMessage={dateErrors.end ? 'End date cannot be before start date' : undefined}
+          />
+        </div>
         <Pagination
           totalEntries={totalEntries}
           currentPage={currentPage}
@@ -120,11 +206,22 @@ const LogsView = () => {
                     {/* Timeline dot */}
                     <div className="absolute -left-[9px] top-4 h-4 w-4 rounded-full bg-white border-2 border-blue-500" />
                     {/* Time */}
-                    <div className="text-sm text-muted-foreground mb-2">
-                      {new Date(appointment.start || '').toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
+                    <div className="flex gap-2">
+                      {/* 28 Jan 2025 10:00 AM */}
+                      <p className=" mb-2">
+                        {new Date(appointment.start || '').toLocaleString([], {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                        })}
+                      </p>
+
+                      <p className="text-sm text-muted-foreground mb-2">
+                        {new Date(appointment.start || '').toLocaleString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </p>
                     </div>
                     {/* Card */}
                     <div className="grid gap-4">
@@ -175,11 +272,12 @@ const Pagination = ({
       </Button>
       <div className="flex gap-1">
         {Array.from({ length: Math.min(5, Math.ceil(totalEntries / pageSize)) }, (_, i) => {
+          const totalPages = Math.ceil(totalEntries / pageSize);
           const pageNum =
             currentPage <= 3
               ? i + 1
-              : currentPage >= Math.ceil(totalEntries / pageSize) - 2
-                ? Math.ceil(totalEntries / pageSize) - (4 - i)
+              : currentPage >= totalPages - 2
+                ? Math.max(1, totalPages - (4 - i))
                 : currentPage - 2 + i;
           return (
             <Button
@@ -319,7 +417,7 @@ export const ZambdaAppointments = () => {
   console.log('zambda appointments', appointments);
 
   return (
-    <div className="flex flex-col max-w-7xl mx-auto my-16 px-4">
+    <div className="flex flex-col  mx-auto my-16 px-4">
       {/* <div className="space-y-8">
         <div className="flex justify-between items-center">
           <div className="space-y-2">
