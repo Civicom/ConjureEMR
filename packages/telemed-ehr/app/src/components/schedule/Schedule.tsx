@@ -1,20 +1,8 @@
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { LoadingButton, TabContext, TabList, TabPanel } from '@mui/lab';
 import {
-  Box,
-  Checkbox,
-  FormControl,
-  FormControlLabel,
-  InputLabel,
-  MenuItem,
-  Paper,
-  Select,
-  Tab,
-  Typography,
   capitalize,
 } from '@mui/material';
-import Alert, { AlertColor } from '@mui/material/Alert';
-import Snackbar from '@mui/material/Snackbar';
+// import Alert, { AlertColor } from '@mui/material/Alert';
 import React, { ReactElement } from 'react';
 import { ScheduleCapacity } from './ScheduleCapacity';
 import { HealthcareService, Location, LocationHoursOfOperation, Practitioner } from 'fhir/r4';
@@ -24,6 +12,11 @@ import { DateTime } from 'luxon';
 import { Operation } from 'fast-json-patch';
 import { Closure, Day, Overrides, ScheduleExtension, Weekday, Weekdays } from '../../types/types';
 import { useApiClients } from '../../hooks/useAppClients';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { ReTabsSquare, ReTabsSquareList, ReTabsSquareTrigger, ReTabsSquareContent } from "../ui/retabssquare";
+// import { ToastMessage } from '../../pages/Schedule';
+import { ToastMessage , createToast}  from '../../pages/Schedule';
+import { useState, useMemo } from 'react';
 
 interface InfoForDayProps {
   day: Weekday;
@@ -65,16 +58,85 @@ function InfoForDay({ day, setDay, updateItem, loading }: InfoForDayProps): Reac
   function createOpenCloseSelectField(type: 'Open' | 'Close', day: Day): ReactElement {
     const typeLowercase = type.toLocaleLowerCase();
     return (
-      <FormControl sx={{ marginRight: 2 }}>
-        <InputLabel id={`${typeLowercase}-label`}>{type}</InputLabel>
-        <Select
-          labelId={`${typeLowercase}-label`}
+      // Old code
+      // <FormControl sx={{ marginRight: 2 }}>
+      //   <InputLabel id={`${typeLowercase}-label`}>{type}</InputLabel>
+      //   <Select
+      //     labelId={`${typeLowercase}-label`}
+      //     id={typeLowercase}
+      //     value={type === 'Open' ? open : close}
+      //     label={type}
+      //     disabled={!workingDay}
+      //     onChange={(newTime) => {
+      //       const updatedTime = Number(newTime.target.value);
+      //       const dayTemp = day;
+      //       if (type === 'Open') {
+      //         setOpen(updatedTime);
+      //         dayTemp.open = updatedTime;
+      //         setDay(dayTemp);
+      //       } else if (type === 'Close') {
+      //         setClose(updatedTime);
+      //         dayTemp.close = updatedTime;
+      //         setDay(dayTemp);
+      //       }
+      //     }}
+      //     sx={{
+      //       width: 200,
+      //       maxWidth: '100%',
+      //       flexShrink: 1,
+      //     }}
+      //     MenuProps={{
+      //       PaperProps: {
+      //         sx: {
+      //           '& .MuiMenuItem-root:hover': {
+      //             backgroundColor: otherColors.selectMenuHover,
+      //           },
+      //         },
+      //       },
+      //     }}
+      //   >
+      //     {type === 'Open' && <MenuItem value={0}>12 AM</MenuItem>}
+      //     <MenuItem value={1}>1 AM</MenuItem>
+      //     <MenuItem value={2}>2 AM</MenuItem>
+      //     <MenuItem value={3}>3 AM</MenuItem>
+      //     <MenuItem value={4}>4 AM</MenuItem>
+      //     <MenuItem value={5}>5 AM</MenuItem>
+      //     <MenuItem value={6}>6 AM</MenuItem>
+      //     <MenuItem value={7}>7 AM</MenuItem>
+      //     <MenuItem value={8}>8 AM</MenuItem>
+      //     <MenuItem value={9}>9 AM</MenuItem>
+      //     <MenuItem value={10}>10 AM</MenuItem>
+      //     <MenuItem value={11}>11 AM</MenuItem>
+      //     <MenuItem value={12}>12 PM</MenuItem>
+      //     <MenuItem value={13}>1 PM</MenuItem>
+      //     <MenuItem value={14}>2 PM</MenuItem>
+      //     <MenuItem value={15}>3 PM</MenuItem>
+      //     <MenuItem value={16}>4 PM</MenuItem>
+      //     <MenuItem value={17}>5 PM</MenuItem>
+      //     <MenuItem value={18}>6 PM</MenuItem>
+      //     <MenuItem value={19}>7 PM</MenuItem>
+      //     <MenuItem value={20}>8 PM</MenuItem>
+      //     <MenuItem value={21}>9 PM</MenuItem>
+      //     <MenuItem value={22}>10 PM</MenuItem>
+      //     <MenuItem value={23}>11 PM</MenuItem>
+      //     {type === 'Close' && <MenuItem value={24}>12 AM</MenuItem>}
+      //   </Select>
+      // </FormControl>
+
+      // New code
+      <div className="mr-8">
+        <label 
+          htmlFor={typeLowercase}
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
+          {type}
+        </label>
+        <select
           id={typeLowercase}
           value={type === 'Open' ? open : close}
-          label={type}
           disabled={!workingDay}
-          onChange={(newTime) => {
-            const updatedTime = Number(newTime.target.value);
+          onChange={(event) => {
+            const updatedTime = Number(event.target.value);
             const dayTemp = day;
             if (type === 'Open') {
               setOpen(updatedTime);
@@ -86,48 +148,35 @@ function InfoForDay({ day, setDay, updateItem, loading }: InfoForDayProps): Reac
               setDay(dayTemp);
             }
           }}
-          sx={{
-            width: 200,
-            maxWidth: '100%',
-            flexShrink: 1,
-          }}
-          MenuProps={{
-            PaperProps: {
-              sx: {
-                '& .MuiMenuItem-root:hover': {
-                  backgroundColor: otherColors.selectMenuHover,
-                },
-              },
-            },
-          }}
+          className="w-[200px] max-w-full flex-shrink px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary disabled:bg-gray-100 disabled:text-gray-500"
         >
-          {type === 'Open' && <MenuItem value={0}>12 AM</MenuItem>}
-          <MenuItem value={1}>1 AM</MenuItem>
-          <MenuItem value={2}>2 AM</MenuItem>
-          <MenuItem value={3}>3 AM</MenuItem>
-          <MenuItem value={4}>4 AM</MenuItem>
-          <MenuItem value={5}>5 AM</MenuItem>
-          <MenuItem value={6}>6 AM</MenuItem>
-          <MenuItem value={7}>7 AM</MenuItem>
-          <MenuItem value={8}>8 AM</MenuItem>
-          <MenuItem value={9}>9 AM</MenuItem>
-          <MenuItem value={10}>10 AM</MenuItem>
-          <MenuItem value={11}>11 AM</MenuItem>
-          <MenuItem value={12}>12 PM</MenuItem>
-          <MenuItem value={13}>1 PM</MenuItem>
-          <MenuItem value={14}>2 PM</MenuItem>
-          <MenuItem value={15}>3 PM</MenuItem>
-          <MenuItem value={16}>4 PM</MenuItem>
-          <MenuItem value={17}>5 PM</MenuItem>
-          <MenuItem value={18}>6 PM</MenuItem>
-          <MenuItem value={19}>7 PM</MenuItem>
-          <MenuItem value={20}>8 PM</MenuItem>
-          <MenuItem value={21}>9 PM</MenuItem>
-          <MenuItem value={22}>10 PM</MenuItem>
-          <MenuItem value={23}>11 PM</MenuItem>
-          {type === 'Close' && <MenuItem value={24}>12 AM</MenuItem>}
-        </Select>
-      </FormControl>
+          {type === 'Open' && <option value={0}>12 AM</option>}
+          <option value={1}>1 AM</option>
+          <option value={2}>2 AM</option>
+          <option value={3}>3 AM</option>
+          <option value={4}>4 AM</option>
+          <option value={5}>5 AM</option>
+          <option value={6}>6 AM</option>
+          <option value={7}>7 AM</option>
+          <option value={8}>8 AM</option>
+          <option value={9}>9 AM</option>
+          <option value={10}>10 AM</option>
+          <option value={11}>11 AM</option>
+          <option value={12}>12 PM</option>
+          <option value={13}>1 PM</option>
+          <option value={14}>2 PM</option>
+          <option value={15}>3 PM</option>
+          <option value={16}>4 PM</option>
+          <option value={17}>5 PM</option>
+          <option value={18}>6 PM</option>
+          <option value={19}>7 PM</option>
+          <option value={20}>8 PM</option>
+          <option value={21}>9 PM</option>
+          <option value={22}>10 PM</option>
+          <option value={23}>11 PM</option>
+          {type === 'Close' && <option value={24}>12 AM</option>}
+        </select>
+      </div>
     );
   }
 
@@ -137,17 +186,67 @@ function InfoForDay({ day, setDay, updateItem, loading }: InfoForDayProps): Reac
     const bufferValue = type === 'Open' ? (openingBuffer ?? '') : (closingBuffer ?? '');
 
     return (
-      <FormControl sx={{ marginRight: 2 }}>
-        <InputLabel id={`${typeLowercase}-buffer-label`}>{typeVerb} Buffer</InputLabel>
-        <Select
-          labelId={`${typeLowercase}-buffer-label`}
+      // Old code
+      // <FormControl sx={{ marginRight: 2 }}>
+      //   <InputLabel id={`${typeLowercase}-buffer-label`}>{typeVerb} Buffer</InputLabel>
+      //   <Select
+      //     labelId={`${typeLowercase}-buffer-label`}
+      //     id={`${typeLowercase}-buffer`}
+      //     value={bufferValue}
+      //     defaultValue={bufferValue}
+      //     label={`${typeVerb} Buffer`}
+      //     disabled={!workingDay}
+      //     onChange={(newNumber) => {
+      //       const updatedNumber = Number(newNumber.target.value);
+      //       const dayTemp = day;
+      //       if (type === 'Open') {
+      //         setOpeningBuffer(updatedNumber);
+      //         dayTemp.openingBuffer = updatedNumber;
+      //         setDay(dayTemp);
+      //       } else if (type === 'Close') {
+      //         setClosingBuffer(updatedNumber);
+      //         dayTemp.closingBuffer = updatedNumber;
+      //         setDay(dayTemp);
+      //       }
+      //     }}
+      //     sx={{
+      //       width: 200,
+      //       maxWidth: '100%',
+      //       flexShrink: 1,
+      //     }}
+      //     MenuProps={{
+      //       PaperProps: {
+      //         sx: {
+      //           '& .MuiMenuItem-root:hover': {
+      //             backgroundColor: otherColors.selectMenuHover,
+      //           },
+      //         },
+      //       },
+      //     }}
+      //   >
+      //     <MenuItem value={0}>0 mins</MenuItem>
+      //     <MenuItem value={15}>15 mins</MenuItem>
+      //     <MenuItem value={30}>30 mins</MenuItem>
+      //     <MenuItem value={60}>60 mins</MenuItem>
+      //     <MenuItem value={90}>90 mins</MenuItem>
+      //   </Select>
+      // </FormControl>
+
+      // New code
+      <div className="mr-8">
+        <label 
+          htmlFor={`${typeLowercase}-buffer`}
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
+          {typeVerb} Buffer
+        </label>
+        <select
           id={`${typeLowercase}-buffer`}
           value={bufferValue}
-          defaultValue={bufferValue}
-          label={`${typeVerb} Buffer`}
+          // defaultValue={bufferValue}
           disabled={!workingDay}
-          onChange={(newNumber) => {
-            const updatedNumber = Number(newNumber.target.value);
+          onChange={(event) => {
+            const updatedNumber = Number(event.target.value);
             const dayTemp = day;
             if (type === 'Open') {
               setOpeningBuffer(updatedNumber);
@@ -159,99 +258,71 @@ function InfoForDay({ day, setDay, updateItem, loading }: InfoForDayProps): Reac
               setDay(dayTemp);
             }
           }}
-          sx={{
-            width: 200,
-            maxWidth: '100%',
-            flexShrink: 1,
-          }}
-          MenuProps={{
-            PaperProps: {
-              sx: {
-                '& .MuiMenuItem-root:hover': {
-                  backgroundColor: otherColors.selectMenuHover,
-                },
-              },
-            },
-          }}
+          className="w-[200px] max-w-full flex-shrink px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary disabled:bg-gray-100 disabled:text-gray-500"
         >
-          <MenuItem value={0}>0 mins</MenuItem>
-          <MenuItem value={15}>15 mins</MenuItem>
-          <MenuItem value={30}>30 mins</MenuItem>
-          <MenuItem value={60}>60 mins</MenuItem>
-          <MenuItem value={90}>90 mins</MenuItem>
-        </Select>
-      </FormControl>
+          <option value={0}>0 mins</option>
+          <option value={15}>15 mins</option>
+          <option value={30}>30 mins</option>
+          <option value={60}>60 mins</option>
+          <option value={90}>90 mins</option>
+        </select>
+      </div>
     );
   }
 
   return (
-    <Box>
+    <div className="">
       <>
         {/* Working Hours */}
-        <Typography variant="h4" color="primary.dark" marginBottom={3} marginTop={-1}>
+        <h4 className="text-2xl text-primary-dark mb-8 -mt-1">
           Working Hours
-        </Typography>
+        </h4>
 
         {/* Working Hours Form */}
-
-        <Box sx={{ display: 'flex', flexDirection: 'row' }} alignItems="center">
+        <div className="flex flex-row items-center">
           {/* Checkbox */}
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={workingDay}
-                onChange={(event) => {
-                  const dayTemp = day;
-                  dayTemp.workingDay = event.target.checked;
-                  setDay(dayTemp);
-                  setWorkingDay(event.target.checked);
-                }}
-              />
-            }
-            label="Working Day"
-          />
+          <label className="flex items-center space-x-2 mr-8">
+            <input
+              type="checkbox"
+              checked={workingDay}
+              onChange={(event) => {
+                const dayTemp = day;
+                dayTemp.workingDay = event.target.checked;
+                setDay(dayTemp);
+                setWorkingDay(event.target.checked);
+              }}
+              className="accent-red-500 form-checkbox w-[18px] h-[18px] "
+            />
+            <span>Working Day</span>
+          </label>
 
           {createOpenCloseSelectField('Open', day)}
           {createOpenCloseBufferSelectField('Open', day)}
 
           {createOpenCloseSelectField('Close', day)}
           {createOpenCloseBufferSelectField('Close', day)}
-        </Box>
+        </div>
 
         {/* Capacity */}
         <form onSubmit={updateItem}>
           {workingDay && (
-            <Box>
-              <Box sx={{ display: 'inline-flex', alignItems: 'center' }} marginBottom={3} marginTop={6}>
-                <Typography variant="h4" color="primary.dark">
+            <div>
+              <div className="inline-flex items-center mb-12 mt-24">
+                <h4 className="text-2xl text-primary-dark">
                   Capacity
-                </Typography>
+                </h4>
 
                 {/* Visit duration */}
-                <Box
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                  }}
-                >
+                <div className="flex flex-row items-center">
                   <InfoOutlinedIcon
-                    sx={{
-                      marginRight: 1,
-                      marginLeft: 3,
-                      width: 18,
-                      height: 18,
-                    }}
-                    color="secondary"
+                    className="mr-4 ml-12 w-[18px] h-[18px] text-secondary"
                   />
-                  <Typography variant="body1">
-                    <Box component="span" fontWeight="bold" display="inline">
-                      Visit Duration:
-                    </Box>{' '}
+                  <p className="text-base">
+                    <span className="font-bold">Visit Duration:</span>{' '}
                     15 minutes
-                  </Typography>
-                </Box>
-              </Box>
+                  </p>
+                </div>
+              </div>
 
               <ScheduleCapacity
                 day={day}
@@ -261,31 +332,30 @@ function InfoForDay({ day, setDay, updateItem, loading }: InfoForDayProps): Reac
                 openingBuffer={openingBuffer}
                 closingBuffer={closingBuffer}
               />
-            </Box>
+            </div>
           )}
           {/* save changes and cancel buttons */}
-          <Box marginTop={3} display="flex" flexDirection="row">
-            <LoadingButton
-              variant="contained"
-              sx={{
-                borderRadius: '50px',
-                textTransform: 'none',
-                height: 36,
-                fontWeight: 'bold',
-              }}
+          <div className="mt-12 flex flex-row">
+            <button
               type="submit"
-              loading={loading}
+              disabled={loading}
+              className="bg-red-500 text-white hover:bg-red-600 min-w-[130px] rounded-full px-4 py-2 h-9 font-bold bg-primary text-white disabled:opacity-50 text-center"
             >
-              Save Changes
-            </LoadingButton>
-          </Box>
-          <Typography sx={{ marginTop: 1 }}>
+              {loading 
+              ? <svg aria-hidden="true" className="fill-white text-black w-5 h-5 animate-spin dark:text-gray-600 mx-auto" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+                  <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+                </svg>   
+              : 'Save Changes'}
+            </button>
+          </div>
+          <p className="mt-4">
             Please note if you save changes to Working Hours, edits to Schedule Overrides and Closed Dates will be saved
             too.
-          </Typography>
+          </p>
         </form>
       </>
-    </Box>
+    </div>
   );
 }
 
@@ -293,9 +363,10 @@ interface ScheduleProps {
   item: Location | Practitioner | HealthcareService;
   id: string;
   setItem: React.Dispatch<React.SetStateAction<Location | Practitioner | HealthcareService | undefined>>;
+  addToast: (message: string, type: ToastMessage['type']) => void;
 }
 
-export default function Schedule({ item, setItem }: ScheduleProps): ReactElement {
+export default function Schedule({ item, setItem, addToast }: ScheduleProps): ReactElement {
   const today = DateTime.now().toLocaleString({ weekday: 'long' }).toLowerCase();
   const [dayOfWeek, setDayOfWeek] = React.useState(today);
   const [days, setDays] = React.useState<Weekdays | undefined>(undefined);
@@ -303,9 +374,11 @@ export default function Schedule({ item, setItem }: ScheduleProps): ReactElement
   const [closures, setClosures] = React.useState<Closure[]>();
   const [loading, setLoading] = React.useState<boolean>(false);
   const { fhirClient } = useApiClients();
-  const [toastMessage, setToastMessage] = React.useState<string | undefined>(undefined);
-  const [toastType, setToastType] = React.useState<AlertColor | undefined>(undefined);
-  const [snackbarOpen, setSnackbarOpen] = React.useState<boolean>(false);
+  // const [toastMessage, setToastMessage] = React.useState<string | undefined>(undefined);
+  // const [toastType, setToastType] = React.useState<AlertColor | undefined>(undefined);
+  // const [snackbarOpen, setSnackbarOpen] = React.useState<boolean>(false);
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  // const {addToast} = useMemo(() => createToast(setToasts), []);
 
   const handleTabChange = (event: React.SyntheticEvent, newDayOfWeek: string): void => {
     setDayOfWeek(newDayOfWeek);
@@ -396,21 +469,19 @@ export default function Schedule({ item, setItem }: ScheduleProps): ReactElement
       });
 
       setLoading(false);
-      setToastMessage('Schedule changes saved');
-      setToastType('success');
-      setSnackbarOpen(true);
+      addToast('Schedule: Changes saved', 'Success');
+      console.log("Schedule: Changes saved");
     } catch (error) {
       console.error(error);
-      setToastMessage('Failed to save schedule changes');
-      setToastType('error');
-      setSnackbarOpen(true);
+      addToast('Failed to save schedule changes', 'Error');
+      console.log("Failed to save schedule changes");
     } finally {
       setLoading(false);
     }
   }
 
   const handleSnackBarClose = (): void => {
-    setSnackbarOpen(false);
+    // setSnackbarOpen(false);
   };
 
   React.useEffect(() => {
@@ -428,85 +499,39 @@ export default function Schedule({ item, setItem }: ScheduleProps): ReactElement
 
   return (
     <>
-      <TabContext value={dayOfWeek}>
-        {/* seven buttons, one for each day of the week */}
-        <Paper>
-          <Box paddingTop={1}>
-            <Box marginX={3} marginTop={2}>
-              <TabList
-                TabIndicatorProps={{ style: { backgroundColor: 'transparent' } }}
-                sx={{
-                  '& .MuiButtonBase-root': {
-                    '&:first-of-type': {
-                      borderTopLeftRadius: '8px',
-                      borderBottomLeftRadius: '8px',
-                      borderLeft: '1px solid #2169F5',
-                    },
+      <div className="bg-white rounded-lg shadow-md mb-6 p-6">
 
-                    '&:last-child': {
-                      borderTopRightRadius: '8px',
-                      borderBottomRightRadius: '8px',
-                    },
-                  },
+        <ReTabsSquare defaultValue="monday">
+          <ReTabsSquareList className="bg-white text-[#EF4444] border border-[#EF4444]">
+            <ReTabsSquareTrigger value="monday" className="data-[state=active]:bg-[#EF4444] data-[state=active]:text-white font-bold">Monday</ReTabsSquareTrigger>
+            <ReTabsSquareTrigger value="tuesday" className="data-[state=active]:bg-[#EF4444] data-[state=active]:text-white font-bold">Tuesday</ReTabsSquareTrigger>
+            <ReTabsSquareTrigger value="wednesday" className="data-[state=active]:bg-[#EF4444] data-[state=active]:text-white font-bold">Wednesday</ReTabsSquareTrigger>
+            <ReTabsSquareTrigger value="thursday" className="data-[state=active]:bg-[#EF4444] data-[state=active]:text-white font-bold">Thursday</ReTabsSquareTrigger>
+            <ReTabsSquareTrigger value="friday" className="data-[state=active]:bg-[#EF4444] data-[state=active]:text-white font-bold">Friday</ReTabsSquareTrigger>
+            <ReTabsSquareTrigger value="saturday" className="data-[state=active]:bg-[#EF4444] data-[state=active]:text-white font-bold">Saturday</ReTabsSquareTrigger>
+            <ReTabsSquareTrigger value="sunday" className="data-[state=active]:bg-[#EF4444] data-[state=active]:text-white font-bold">Sunday</ReTabsSquareTrigger>
+          </ReTabsSquareList>
+
+          {days &&
+          Object.keys(days).map((day) => (
+            <ReTabsSquareContent value={day} key={day} className="my-[24px]">
+              <InfoForDay
+                day={days[day]}
+                setDay={(dayTemp: Day) => {
+                  const daysTemp = days;
+                  daysTemp[day] = { ...dayTemp, workingDay: days[day].workingDay };
+                  setDays(daysTemp);
                 }}
-                onChange={handleTabChange}
-                aria-label="Weekdays for the schedule"
-              >
-                {WEEKDAYS.map((day) => (
-                  <Tab
-                    sx={{
-                      textTransform: 'none',
-                      borderRight: '1px solid #2169F5',
-                      borderTop: '1px solid #2169F5',
-                      borderBottom: '1px solid #2169F5',
-                      color: '#2169F5',
-                      width: 'fit-content',
-                      height: '36px',
-                      minHeight: '36px',
-                      fontWeight: 700,
-                      '&.Mui-selected': {
-                        color: '#FFFFFF',
-                        background: '#2169F5',
-                      },
-                    }}
-                    label={capitalize(day)}
-                    value={day}
-                    key={day}
-                  ></Tab>
-                ))}
-              </TabList>
-            </Box>
-            {days &&
-              Object.keys(days).map((day) => (
-                <TabPanel value={day} key={day}>
-                  <InfoForDay
-                    day={days[day]}
-                    setDay={(dayTemp: Day) => {
-                      const daysTemp = days;
-                      daysTemp[day] = { ...dayTemp, workingDay: days[day].workingDay };
-                      setDays(daysTemp);
-                    }}
-                    dayOfWeek={dayOfWeek}
-                    updateItem={updateItem}
-                    loading={loading}
-                  ></InfoForDay>
-                </TabPanel>
-              ))}
-          </Box>
-        </Paper>
-        <Snackbar
-          // anchorOrigin={{ vertical: snackbarOpen.vertical, horizontal: snackbarOpen.horizontal }}
-          open={snackbarOpen}
-          // autoHideDuration={6000}
-          onClose={handleSnackBarClose}
-          message={toastMessage}
-        >
-          <Alert onClose={handleSnackBarClose} severity={toastType} sx={{ width: '100%' }}>
-            {toastMessage}
-          </Alert>
-        </Snackbar>
-      </TabContext>
-      <ScheduleOverrides
+                dayOfWeek={dayOfWeek}
+                updateItem={updateItem}
+                loading={loading}
+              ></InfoForDay>
+            </ReTabsSquareContent>
+          ))}
+        </ReTabsSquare>
+      </div>
+
+      <ScheduleOverrides 
         overrides={overrides}
         closures={closures}
         item={item}
@@ -515,9 +540,7 @@ export default function Schedule({ item, setItem }: ScheduleProps): ReactElement
         setOverrides={setOverrides}
         setClosures={setClosures}
         updateItem={updateItem}
-        setToastMessage={setToastMessage}
-        setToastType={setToastType}
-        setSnackbarOpen={setSnackbarOpen}
+        addToast={addToast}
       />
     </>
   );
