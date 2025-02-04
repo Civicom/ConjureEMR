@@ -62,12 +62,12 @@ export const columns: ColumnDef<StateDetails>[] = [{
 
 export default function StatesPage() {
   const [rowSelection, setRowSelection] = React.useState({});
-  const { locationData, isFetching } = useStatesQuery();
+  const { data, isFetching } = useStatesQuery();
 
   const statesData: StateDetails[] = React.useMemo(() => {
     return AllStates.map((state: State) => {
 
-      const stateLocations = locationData || [];
+      const stateLocations = data || [];
       const stateLocation = stateLocations.find((location) => location.address?.state === state.value);
       const operatesInState = Boolean(stateLocation && stateLocation.status === 'active');
 
@@ -79,7 +79,7 @@ export default function StatesPage() {
       };
       return stateDetail;
     });
-  }, [locationData]);
+  }, [data]);
 
   const table = useReactTable({
     data: statesData, // Use the transformed data instead of static data
@@ -122,7 +122,7 @@ export default function StatesPage() {
                 <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                        <Link to={`/admin/states/${row.original.state}`} className="block -m-4 p-4">
+                        <Link to={`/admin/state/${row.original.state}`} className="block -m-4 p-4">
                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </Link>
                     </TableCell>

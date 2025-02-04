@@ -128,11 +128,10 @@ export default function InsurancePage() {
                 </DropdownMenu>
 
  
-                <Link to="/telemed-admin/insurances/new">
-                <Button className="flex items-center bg-red-500 hover:bg-red-600 font-bold">
-                    <PlusIcon className="w-4 h-4" />Add Insurance
-                </Button>
-                
+                <Link to="/admin/insurance/new">
+                    <Button className="flex items-center bg-red-500 hover:bg-red-600 font-bold">
+                        <PlusIcon className="w-4 h-4" />Add Insurance
+                    </Button>
                 </Link>
 
             </div>            
