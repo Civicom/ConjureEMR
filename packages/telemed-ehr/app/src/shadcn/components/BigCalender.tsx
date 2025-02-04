@@ -23,6 +23,7 @@ import {
   SelectGroup,
   SelectLabel,
 } from '@/components/ui/select';
+import CalendarEvent from './CalendarEvent';
 
 const RQBigCalender = () => {
   const [view, setView] = useState<'day' | 'week' | 'month'>('month');
@@ -301,26 +302,7 @@ const DayCell = ({ dayNumber, appointments, isToday, isCurrentMonth }: DayCellPr
       </div>
       <div className="mt-1">
         {appointments.slice(0, maxVisibleAppointments).map((apt) => {
-          const aptDate = new Date(apt.start);
-          const aptTime = aptDate.toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-          });
-          const aptName = `${apt.patient?.[0]?.name?.[0]?.given?.[0] || '-'} ${
-            apt.patient?.[0]?.name?.[0]?.family || '-'
-          }`;
-
-          return (
-            <Badge
-              variant="secondary"
-              key={apt.id}
-              className="flex items-center gap-1 px-2 py-0 mb-1 cursor-pointer hover:bg-slate-200 bg-slate-50"
-            >
-              <div className="w-1 h-1 bg-blue-500 rounded-full inline-block" />
-              <p className="whitespace-nowrap font-semibold">{aptTime}</p>
-              <p className="whitespace-nowrap">{aptName}</p>
-            </Badge>
-          );
+          return <CalendarEvent appointment={apt} />;
         })}
         {hasMoreAppointments && (
           <div className="text-xs text-muted-foreground text-center">
@@ -395,14 +377,62 @@ const Sidebar = () => {
             </HoverCardContent>
           </HoverCard>
         </div>
-        <ul className="flex flex-col min-h-[80%] gap-4 text-sm">
-          {/* <li className="border-l-4 border-blue-500 pl-2">Edward Smith - 2:30 PM</li>
-          <li className="border-l-4 border-blue-500 pl-2">Julius Caesar - 3:30 PM</li>
-          <li className="border-l-4 border-blue-500 pl-2">Castro Piolo - 3:30 PM</li> */}
-          <Button className="" variant="ghost" size="sm">
+        <ul className="flex flex-col gap-2 text-sm pt-4">
+          <Card className="pb-2 p-2 w-full flex flex- bg-teal-800 text-white">
+            <div className="h-auto w-2 bg-teal-500 mr-3 rounded-full"></div>
+            <div className="flex-1">
+              <div className="flex items-start flex-wrap lg:flex-nowrap justify-between">
+                <div className="text-xs text-gray-200 order-2 lg:order-1">10:15 AM - 12:15 PM</div>
+                {/* <Badge className="bg-indigo-500 text-white hover:bg-indigo-500 order-1 lg:order-2">Prebooked</Badge> */}
+              </div>
+              <h3 className="text-sm font-bold">Edward Smith</h3>
+            </div>
+          </Card>
+          <Card className="pb-2 p-2 w-full flex flex- bg-teal-500 text-teal-100">
+            <div className="h-auto w-2 bg-teal-100 mr-3 rounded-full"></div>
+            <div className="flex-1">
+              <div className="flex items-start flex-wrap lg:flex-nowrap justify-between">
+                <div className="text-xs text-teal-200 order-2 lg:order-1">10:15 AM - 12:15 PM</div>
+                {/* <Badge className="bg-indigo-500 text-white hover:bg-indigo-500 order-1 lg:order-2">Prebooked</Badge> */}
+              </div>
+              <h3 className="text-sm font-bold">Edward Smith</h3>
+            </div>
+          </Card>
+          <Card className="pb-2 p-2 w-full flex flex- bg-slate-800 text-white">
+            <div className="h-auto w-2 bg-slate-500 mr-3 rounded-full"></div>
+            <div className="flex-1">
+              <div className="flex items-start flex-wrap lg:flex-nowrap justify-between">
+                <div className="text-xs text-gray-200 order-2 lg:order-1">10:15 AM - 12:15 PM</div>
+                {/* <Badge className="bg-indigo-500 text-white hover:bg-indigo-500 order-1 lg:order-2">Prebooked</Badge> */}
+              </div>
+              <h3 className="text-sm font-bold">Edward Smith</h3>
+            </div>
+          </Card>
+          <Card className="border-0 pb-2 p-2 w-full flex flex- bg-green-100">
+            <div className="h-auto w-2 bg-green-300 mr-3 rounded-full"></div>
+            <div className="flex-1">
+              <div className="flex items-start flex-wrap lg:flex-nowrap justify-between">
+                <div className="text-xs text-green-700 order-2 lg:order-1">10:15 AM - 12:15 PM</div>
+                {/* <Badge className="bg-indigo-500 text-white hover:bg-indigo-500 order-1 lg:order-2">Prebooked</Badge> */}
+              </div>
+              <h3 className="text-sm font-bold text-green-900">Edward Smith</h3>
+            </div>
+          </Card>
+          <Card className="border-0 pb-2 p-2 w-full flex flex- bg-blue-100">
+            <div className="h-auto w-2 bg-blue-300 mr-3 rounded-full"></div>
+            <div className="flex-1">
+              <div className="flex items-start flex-wrap lg:flex-nowrap justify-between">
+                <div className="text-xs text-blue-700 order-2 lg:order-1">10:15 AM - 12:15 PM</div>
+                {/* <Badge className="bg-indigo-500 text-white hover:bg-indigo-500 order-1 lg:order-2">Prebooked</Badge> */}
+              </div>
+              <h3 className="text-sm font-bold text-blue-900">Edward Smith</h3>
+            </div>
+          </Card>
+
+          {/* <Button className="" variant="ghost" size="sm">
             <ChevronDown />
             More
-          </Button>
+          </Button> */}
         </ul>
       </div>
     </section>
