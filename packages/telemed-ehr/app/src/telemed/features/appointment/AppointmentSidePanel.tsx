@@ -337,7 +337,7 @@ export const AppointmentSidePanel: FC<AppointmentSidePanelProps> = ({ appointmen
       </Card>
 
       {/* Old Code*/}
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 3, overflow: 'auto' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 3, overflow: 'auto', display: 'none' }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
             {appointmentType === 'telemedicine' &&
