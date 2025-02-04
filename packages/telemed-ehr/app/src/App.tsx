@@ -18,6 +18,7 @@ import SchedulePage from './pages/Schedule';
 import SchedulesPage from './pages/Schedules';
 import PatientInformationPage from './pages/PatientInformationPage';
 import PatientsPage from './pages/Patients';
+import AdminPage from './pages/Admin';
 import { TelemedAdminPage } from './pages/TelemedAdminPage';
 import { useNavStore } from './state/nav.store';
 import EditInsurance from './telemed/features/telemed-admin/EditInsurance';
@@ -28,6 +29,7 @@ import { AppointmentPage } from './pages/AppointmentPage';
 import AddSchedulePage from './pages/AddSchedulePage';
 import Version from './pages/Version';
 import { isErxEnabled } from './helpers/erx';
+import Resources from './components/TestPage/Test';
 import('@photonhealth/elements').catch(console.log);
 
 const TelemedTrackingBoardPageLazy = lazy(async () => {
@@ -117,8 +119,6 @@ function App(): ReactElement {
                   <Route path="/schedules" element={<SchedulesPage />} />
                   <Route path="/schedule/:schedule-type/add" element={<AddSchedulePage />} />
                   <Route path="/schedule/:schedule-type/:id" element={<SchedulePage />} />
-                  <Route path="/employees" element={<EmployeesPage />} />
-                  <Route path="/employee/:id" element={<EditEmployeePage />} />
                   <Route path="/patients" element={<PatientsPage />} />
                   <Route path="/patient/:id" element={<PatientInformationPage />} />
                   <Route path="/telemed-admin" element={<Navigate to={INSURANCES_PATH} />} />
@@ -126,7 +126,18 @@ function App(): ReactElement {
                   <Route path="/telemed-admin/states/:state" element={<EditStatePage />} />
                   <Route path={INSURANCES_PATH} element={<TelemedAdminPage />} />
                   <Route path={`${INSURANCES_PATH}/:insurance`} element={<EditInsurance />} />
+
+                  <Route path="/admin" element={<AdminPage />} />
+                  <Route path="/admin/employee/:id" element={<EditEmployeePage />} />
+                  {/* <Route path="/admin/employee/add" element={<AddEmployeePage />} /> */}
+                  <Route path={`/admin/insurance/:insurance`} element={<EditInsurance />} />
+                  <Route path="/admin/states/:state" element={<EditStatePage />} />
+
+
+
                   <Route path="*" element={<Navigate to={'/'} />} />
+                  {/* TODO: remove in production */}
+                  <Route path="/test" element={<Resources />} />
                 </>
               )}
               {currentUser?.hasRole([RoleType.Administrator, RoleType.Provider]) && (
