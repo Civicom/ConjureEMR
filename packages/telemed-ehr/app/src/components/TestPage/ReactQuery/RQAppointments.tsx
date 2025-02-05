@@ -43,7 +43,7 @@ const RQAppointmentsPage = () => {
   };
 
   return (
-    <div className="h-[90dvh]">
+    <div className="h-[90dvh] ">
       {/* <div className="flex justify-between items-center">
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl font-bold">Appointments</h1>
@@ -204,7 +204,7 @@ export const LogsView = () => {
                 return (
                   <div key={appointment.id} className="relative pl-8 pb-8 border-l border-gray-200 last:border-0">
                     {/* Timeline dot */}
-                    <div className="absolute -left-[9px] top-4 h-4 w-4 rounded-full bg-white border-2 border-blue-500" />
+                    <div className="absolute -left-[9px] top-4 h-4 w-4 rounded-full  border-2 border-blue-500" />
                     {/* Time */}
                     <div className="flex gap-2">
                       {/* 28 Jan 2025 10:00 AM */}
@@ -328,7 +328,7 @@ const AppointmentCard = ({
   return (
     <div
       className={cn(
-        'bg-white rounded-lg border border-gray-200 p-4 mb-4 shadow-sm hover:shadow-md transition-shadow max-w-md',
+        ' rounded-lg border border-gray-200 p-4 mb-4 shadow-sm hover:shadow-md transition-shadow max-w-md',
         className,
       )}
     >
@@ -362,7 +362,7 @@ const SkeletonAppointmentCards = ({ pageSize }: { pageSize: number }) => {
       {[...Array(pageSize)].map((_, i) => (
         <div
           key={i}
-          className="bg-white rounded-lg border border-gray-200 p-4 mb-4 shadow-sm hover:shadow-md transition-shadow max-w-md"
+          className=" rounded-lg border border-gray-200 p-4 mb-4 shadow-sm hover:shadow-md transition-shadow max-w-md"
         >
           <div className="flex justify-between items-center mb-3">
             <div className="h-6 w-48 bg-gray-200 rounded animate-pulse"></div>
