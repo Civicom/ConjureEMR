@@ -6,9 +6,7 @@ import MedicationOutlinedIcon from '@mui/icons-material/MedicationOutlined';
 import PersonAddAltOutlinedIcon from '@mui/icons-material/PersonAddAltOutlined';
 import { LoadingButton } from '@mui/lab';
 import {
-  Badge,
   Box,
-  Button,
   Divider,
   Drawer,
   IconButton,
@@ -31,7 +29,7 @@ import {
   getStatusFromExtension,
 } from 'ehr-utils';
 import ChatModal from '../../../features/chat/ChatModal';
-import { calculatePatientAge } from '../../../helpers/formatDateTime';
+import { calculatePatientAge, formatISODateToLocaleDate } from '../../../helpers/formatDateTime';
 import useOttehrUser from '../../../hooks/useOttehrUser';
 import { getSelectors } from '../../../shared/store/getSelectors';
 import CancelVisitDialog from '../../components/CancelVisitDialog';
@@ -44,10 +42,36 @@ import { getPatientName, quickTexts } from '../../utils';
 import { PastVisits } from './PastVisits';
 import { addSpacesAfterCommas } from '../../../helpers/formatString';
 import { INTERPRETER_PHONE_NUMBER } from 'ehr-utils';
-import { Appointment } from 'fhir/r4';
+import { Appointment, Resource } from 'fhir/r4';
 import AppointmentStatusSwitcher from '../../../components/AppointmentStatusSwitcher';
 import { getTelemedAppointmentStatusChip } from '../../utils/getTelemedAppointmentStatusChip';
 import { getInPersonAppointmentStatusChip } from '../../../components/AppointmentTableRow';
+
+
+
+
+import {
+  Cake,
+  Calendar,
+  CalendarPlus2,
+  Clock1,
+  EllipsisVertical,
+  File,
+  Home,
+  Mail,
+  MessageSquare,
+  Phone,
+  UserRound,
+  Video,
+  Pencil,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Skeleton, } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { getInitials } from '@/lib/utils';
+
 
 enum Gender {
   'male' = 'Male',
@@ -103,7 +127,7 @@ export const AppointmentSidePanel: FC<AppointmentSidePanelProps> = ({ appointmen
       .valueString;
   const knownAllergies = getQuestionnaireResponseByLinkId(QuestionnaireLinkIds.ALLERGIES, questionnaireResponse)
     ?.answer[0].valueArray;
-  const address = getQuestionnaireResponseByLinkId(QuestionnaireLinkIds.PATIENT_STREET_ADDRESS, questionnaireResponse)
+  const address1 = getQuestionnaireResponseByLinkId(QuestionnaireLinkIds.PATIENT_STREET_ADDRESS, questionnaireResponse)
     ?.answer?.[0].valueString;
 
   const handleERXLoadingStatusChange = useCallback<(status: boolean) => void>(
@@ -172,6 +196,66 @@ export const AppointmentSidePanel: FC<AppointmentSidePanelProps> = ({ appointmen
   const interpreterString =
     preferredLanguage && isSpanish(preferredLanguage) ? `Interpreter: ${INTERPRETER_PHONE_NUMBER}` : '';
 
+
+  // MC Code Here
+
+  //const [loading, setLoading] = useState<boolean>(false);
+
+  const patientName = getPatientName(patient.name).lastFirstName;
+
+  const address = patient?.address?.[0];
+  const addressStr = address
+    ? `${address.line?.[0] || ''}, ${address.city || ''}, ${address.state || ''} ${address.postalCode || ''}`
+    : '-';
+
+
+  const patientInfoFields = [
+    {
+      label: 'Name',
+      icon: UserRound,
+      value: getPatientName(patient.name).lastFirstName,
+    },
+    {
+      label: 'DOB',
+      icon: Cake,
+      value: DateTime.fromFormat(patient.birthDate!, 'yyyy-MM-dd').toFormat('MM/dd/yyyy'),
+    },
+    {
+      label: 'Age',
+      icon: Clock1,
+      value: calculatePatientAge(patient.birthDate!),
+    },
+    {
+    label: 'Visits',
+      icon: Calendar,
+      value: <PastVisits />,
+    },
+  ];
+
+  const contactInfoFields = [
+    {
+      label: 'Phone',
+      icon: Phone,
+      value: patient?.telecom?.find((t) => t.system === 'phone')?.value || 'N/A',
+    },
+    {
+      label: 'Email',
+      icon: Mail,
+      value: patient?.telecom?.find((t) => t.system === 'email')?.value || 'N/A',
+    },
+    {
+      label: 'Address',
+      icon: Home,
+      value: addressStr,
+    },
+  ];
+
+  const sections = [
+    { title: 'Patient Information', fields: patientInfoFields },
+    { title: 'Contact Information', fields: contactInfoFields },
+  ];
+
+  
   return (
     <Drawer
       variant="permanent"
@@ -182,7 +266,78 @@ export const AppointmentSidePanel: FC<AppointmentSidePanelProps> = ({ appointmen
       }}
     >
       <Toolbar />
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 3, overflow: 'auto' }}>
+
+      <Card className="pb-2 xs:w-full lg:w-auto">
+        <CardHeader className="flex items-center justify-center">
+          {false ? (
+            <Skeleton className="bg-gray-200 w-16 h-16 rounded-full mb-2" />
+          ) : (
+            <Avatar className="w-16 h-16 mb-2">
+              <AvatarImage src={`https://randomuser.me/api/portraits/men/${Math.floor(Math.random() * 100)}.jpg`} />
+              <AvatarFallback>{getInitials(patientName)}</AvatarFallback>
+            </Avatar>
+          )}
+          {false ? (
+            <Skeleton className="bg-gray-200 flex w-48 h-8" />
+          ) : (
+            <CardTitle className="flex items-center gap-2">
+              {patientName}
+              {patient?.active ? (
+                <Badge className="bg-teal-500 text-white hover:bg-teal-500">Active</Badge>
+              ) : (
+                <Badge className="bg-red-500 text-white hover:bg-red-500">Inactive</Badge>
+              )}
+            </CardTitle>
+          )}
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          {sections.map((section) => (
+              <div className="flex flex-col gap-2 border-t pt-4">
+                {false && section.title ? (
+                  <Skeleton className="bg-gray-200 w-48 h-8" />
+                ) : section.title ? (
+                  <div className="flex items-center justify-between">
+                    <h1 className="text-lg font-bold py-1">{section.title}</h1>
+                    {section.title === 'Patient Information' && !isReadOnly && (                
+                      <Button variant="outline" size="icon" className="border border-blue-500">
+                        <Pencil className="text-blue-500" />
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  ''
+                )}
+                {section.fields.map((field) =>
+                  false ? (
+                    <div className="flex justify-between items-center gap-2">
+                      <Skeleton
+                        className="bg-gray-200 flex h-5"
+                        style={{ width: `${Math.floor(Math.random() * (200 - 100 + 1)) + 50}px` }}
+                      />
+                      <Skeleton
+                        className="bg-gray-200 flex h-5"
+                        style={{ width: `${Math.floor(Math.random() * (200 - 100 + 1)) + 50}px` }}
+                      />
+                    </div>
+                  ) : (
+                    <CardDescription className="flex justify-between items-center cursor-pointers group/item rounded-md">
+                      <div className="flex items-center gap-2 ">
+                        <field.icon className="w-4 h-4" /> {field.label}
+                      </div>
+                      <div className="text-gray-700 font-bold text-right group-hover/item:sbg-gray-100 p-1 rounded-md">
+                        {field.value}
+                      </div>
+                    </CardDescription>
+                  ),
+                )}
+              </div>
+            ))}
+        </CardContent>
+      </Card>
+
+      {/* Old Code*/}
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 3, overflow: 'auto', display: 'none' }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
             {appointmentType === 'telemedicine' &&
@@ -230,6 +385,8 @@ export const AppointmentSidePanel: FC<AppointmentSidePanelProps> = ({ appointmen
         </Box>
 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+          
+
           <Tooltip title={patient.id}>
             <Box sx={{ display: 'flex', gap: 0.5 }}>
               <Typography variant="body2">PID:</Typography>
@@ -251,6 +408,8 @@ export const AppointmentSidePanel: FC<AppointmentSidePanelProps> = ({ appointmen
             </Box>
           </Tooltip>
 
+          <Typography variant="body2"><b>Name:</b> {getPatientName(patient.name).lastFirstName}</Typography>
+
           <PastVisits />
 
           <Typography variant="body2">{Gender[patient.gender!]}</Typography>
@@ -270,7 +429,7 @@ export const AppointmentSidePanel: FC<AppointmentSidePanelProps> = ({ appointmen
 
           {/* <Typography variant="body2">Location: {location.address?.state}</Typography> */}
 
-          <Typography variant="body2">Address: {address}</Typography>
+          <Typography variant="body2">Address: {addressStr}</Typography>
 
           <Typography variant="body2">{reasonForVisit && addSpacesAfterCommas(reasonForVisit)}</Typography>
         </Box>

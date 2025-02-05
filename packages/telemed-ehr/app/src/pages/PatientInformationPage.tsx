@@ -164,7 +164,8 @@ export default function PatientInformationPage(): JSX.Element {
       <ScrollToTop />
       <div className="m-8">
         <div className="flex gap-4 flex-col lg:flex-row">
-          <PatientInfoCard patient={patient} loading={loading} lastAppointment={appointments?.[0]?.dateTime} />
+          <PatientInfoCard patient={patient} loading={loading} lastAppointment={appointments?.[0]?.dateTime}
+            showContactActions={true} showNextVisits={true} />
           <div className="bg-gray-50 flex-1 py-4 space-y-4">
             <BreadcrumbPatient
               loading={loading}

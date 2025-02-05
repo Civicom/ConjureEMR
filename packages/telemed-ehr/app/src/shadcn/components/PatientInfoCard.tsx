@@ -23,67 +23,18 @@ import { calculateAge, getInitials } from '@/lib/utils';
 import { formatISODateToLocaleDate, formatISOStringToDateAndTime } from '../../helpers/formatDateTime';
 import { Skeleton } from '@/components/ui/skeleton';
 
-// const visitInfoFields = [
-//   {
-//     label: 'Last visit',
-//     icon: Calendar,
-//     value: '01/01/2025',
-//   },
-//   {
-//     label: 'Paperwork last updated',
-//     icon: File,
-//     value: '12/26/2024',
-//   },
-// ];
-// const patientInfoFields = [
-//   {
-//     label: 'Gender',
-//     icon: UserRound,
-//     value: 'Male',
-//   },
-//   {
-//     label: 'Age',
-//     icon: Clock1,
-//     value: '32',
-//   },
-//   {
-//     label: 'Birthday',
-//     icon: Cake,
-//     value: '01/01/2000',
-//   },
-// ];
-
-// const contactInfoFields = [
-//   {
-//     label: 'Phone',
-//     icon: Phone,
-//     value: '(000) 000-0000',
-//   },
-//   {
-//     label: 'Email',
-//     icon: Mail,
-//     value: 'johnny@walker.com',
-//   },
-//   {
-//     label: 'Address',
-//     icon: Home,
-//     value: '1234 Main St, Anytown, USA',
-//   },
-// ];
-//
-// const sections = [
-//   { title: '', fields: visitInfoFields },
-//   { title: 'Patient Information', fields: patientInfoFields },
-//   { title: 'Contact Information', fields: contactInfoFields },
-// ];
 
 export function PatientInfoCard({
   patient,
   loading,
+  showContactActions = false,
+  showNextVisits = false,
   lastAppointment,
 }: {
   patient: Patient | undefined;
   loading: boolean;
+  showContactActions?: boolean;
+  showNextVisits?: boolean;
   lastAppointment: string | undefined;
 }) {
   const location = useLocation();
@@ -102,7 +53,7 @@ export function PatientInfoCard({
       visitInfoFields[0].value = formatISODateToLocaleDate(lastAppointment ?? '') ?? 'No visits'; // Last visit
       visitInfoFields[1].value = formatISODateToLocaleDate(patient?.meta?.lastUpdated ?? ''); // Next visit
 
-      patientInfoFields[0].value = patient?.gender?.charAt(0).toUpperCase() + patient?.gender?.slice(1) || '';
+      patientInfoFields[0].value = patient?.gender ? patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1) : '';
       patientInfoFields[1].value = patient?.birthDate ? calculateAge(patient.birthDate).toString() : '';
       patientInfoFields[2].value = patient?.birthDate || '';
 
@@ -125,7 +76,7 @@ export function PatientInfoCard({
       // value: 'No visits', // This would need to come from appointments data
     },
     {
-      label: 'Paperwork last updated',
+      label: 'Paperwork Last Updated',
       icon: File,
       value: formatISODateToLocaleDate(patient?.meta?.lastUpdated ?? ''),
     },
@@ -188,7 +139,7 @@ export function PatientInfoCard({
 
   return (
     <Card className="pb-2 xs:w-full lg:w-auto min-w-[400px]">
-      <CardHeader>
+      <CardHeader className="flex items-center  justify-center">
         {loading ? (
           <Skeleton className="bg-gray-200 w-16 h-16 rounded-full mb-2" />
         ) : (
@@ -216,7 +167,7 @@ export function PatientInfoCard({
         )}
         {loading ? (
           <Skeleton className="bg-gray-200 flex h-8" />
-        ) : (
+        ) : ( showContactActions && 
           <div className="pt-2 flex gap-1">
             <Button className="font-bold bg-blue-500 text-white hover:bg-blue-600 px-3">
               <MessageSquare className="w-4 h-4" />
@@ -273,7 +224,7 @@ export function PatientInfoCard({
           </div>
         ))}
 
-        <div className="flex flex-col gap-2 border-t pt-4">
+        {showNextVisits && <div className="flex flex-col gap-2 border-t pt-4">
           {loading ? (
             <Skeleton className="bg-gray-200 w-48 h-8" />
           ) : (
@@ -316,7 +267,8 @@ export function PatientInfoCard({
               <Calendar className="w-4 h-4" /> No upcoming visits
             </div>
           </CardDescription> */}
-        </div>
+          </div>
+        }
       </CardContent>
     </Card>
   );

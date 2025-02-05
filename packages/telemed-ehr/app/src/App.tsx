@@ -5,12 +5,12 @@ import { ReactElement, Suspense, lazy } from 'react';
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import { CustomThemeProvider } from './CustomThemeProvider';
 import { LoadingScreen } from './components/LoadingScreen';
-import Navbar from './components/navigation/Navbar';
+import Navbar from '@/components/navigation/Navbar';
 import { ProtectedRoute } from './components/routing/ProtectedRoute';
 import { useApiClients } from './hooks/useAppClients';
 import useOttehrUser, { useProviderERXStateStore } from './hooks/useOttehrUser';
 import AddPatient from './pages/AddPatient';
-import AppointmentsPage from './pages/Appointments';
+import Appointments from './pages/Appointments';
 import EditEmployeePage from './pages/EditEmployee';
 import EmployeesPage from './pages/Employees';
 import Logout from './pages/Logout';
@@ -114,7 +114,7 @@ function App(): ReactElement {
                 <>
                   <Route path="/" element={<Navigate to="/visits" />} />
                   <Route path="/logout" element={<Logout />} />
-                  <Route path="/visits" element={<AppointmentsPage />} />
+                  <Route path="/visits" element={<Appointments />} />
                   <Route path="/visits/add" element={<AddPatient />} />
                   <Route path="/visit/:id" element={<AppointmentPage />} />
                   <Route path="/schedules" element={<SchedulesPage />} />
@@ -144,7 +144,7 @@ function App(): ReactElement {
                 <>
                   <Route path="/" element={<Navigate to="/visits" />} />
                   <Route path="/logout" element={<Logout />} />
-                  <Route path="/visits" element={<AppointmentsPage />} />
+                  <Route path="/visits" element={<Appointments />} />
                   <Route path="/visits/add" element={<AddPatient />} />
                   <Route path="/patient/:id" element={<PatientInformationPage />} />
                   <Route path="/patients" element={<PatientsPage />} />

@@ -14,16 +14,16 @@ export default function Navbar(): ReactElement {
   const location = useLocation();
   const user = useOttehrUser();
 
-  if (location.pathname.match(/^\/telemed\/appointments\//) || location.pathname.match(/^\/visit\//)) {
+  if (location.pathname.match(/^\/telemed\/appointments\//)) {
     return <></>;
   }
 
   const menuItems = [
-    {name: 'In Person', url: ['/visits', '/visit'],
+    {name: 'In Person', url: ['/visits'],
     icon: <Users className="mx-auto my-auto text-[#4b5c6b] w-[30px] h-[30px]" />
     }, 
     {name: 'Schedules', url: ['/schedules', '/schedule'], icon: <CalendarDays className="mx-auto my-auto text-[#4b5c6b] w-[30px] h-[30px]" />}, 
-    {name: 'Patients', url: ['/patients', '/patient'],icon: <Accessibility className="mx-auto my-auto text-[#4b5c6b] w-[35px] h-[35px]" />
+    {name: 'Patients', url: ['/patients', '/patient', '/visit/'],icon: <Accessibility className="mx-auto my-auto text-[#4b5c6b] w-[35px] h-[35px]" />
     }, 
     // {name: 'Employees', url: ['/employees', '/employee'],icon: <BriefcaseBusiness className="mx-auto my-auto text-[#4b5c6b] w-[30px] h-[30px]" />
     // }, 
@@ -33,7 +33,6 @@ export default function Navbar(): ReactElement {
     // }
   ];
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
-  console.log(user);
   return (
     <>
       <div id="navbar-container" className='flex justify-center items-center px-[30px] pt-[10px] bg-white relative top-0 left-0 right-0 z-10 border-b border-gray-300'>

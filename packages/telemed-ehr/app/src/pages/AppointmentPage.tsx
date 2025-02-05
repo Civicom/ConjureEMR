@@ -1,14 +1,15 @@
-import { Box, Container } from '@mui/material';
 import { FC, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { AppointmentHeader, AppointmentTabs, AppointmentTabsHeader } from '../telemed/features/appointment';
-import { AppointmentSidePanel } from '../telemed/features/appointment';
+import { AppointmentHeader } from '@/shadcn/components/appointment/AppointmentHeader';
+import { AppointmentTabs } from '@/shadcn/components/appointment/AppointmentTabs';
+import { AppointmentSidePanel } from '@/shadcn/components/appointment/AppointmentSidePanel';
 import { PATIENT_PHOTO_CODE, getQuestionnaireResponseByLinkId } from 'ehr-utils';
+import { useAppointmentStore } from '../state/appointment/appointment.store';
+import { useGetAppointmentInformation } from '../state/appointment/appointment.queries';
+import { getSelectors } from '@/shared/store/getSelectors';
 import {
-  useAppointmentStore,
   useExamObservationsStore,
   EXAM_OBSERVATIONS_INITIAL,
-  useGetAppointmentInformation,
   useIsReadOnly,
 } from '../telemed';
 import { useExamCardsStore, EXAM_CARDS_INITIAL } from '../telemed/state/appointment/exam-cards.store';
@@ -28,6 +29,8 @@ export const AppointmentPage: FC = () => {
 
   const navigate = useNavigate();
 
+  const { patient } = getSelectors(useAppointmentStore, ['patient']);
+
   const { isFetching } = useGetAppointmentInformation(
     {
       appointmentId: id,
@@ -36,6 +39,7 @@ export const AppointmentPage: FC = () => {
       const questionnaireResponse = data?.find(
         (resource: FhirResource) => resource.resourceType === 'QuestionnaireResponse',
       ) as unknown as QuestionnaireResponse;
+
       useAppointmentStore.setState({
         appointment: data?.find(
           (resource: FhirResource) => resource.resourceType === 'Appointment',
@@ -69,7 +73,8 @@ export const AppointmentPage: FC = () => {
       questionnaireResponse: undefined,
       patientPhotoUrls: [],
       chartData: undefined,
-      currentTab: 'hpi',
+      currentTab: 'notes',
+      isAppointmentLoading: false,
     });
     useExamObservationsStore.setState(EXAM_OBSERVATIONS_INITIAL);
     useExamCardsStore.setState(EXAM_CARDS_INITIAL);
@@ -80,23 +85,15 @@ export const AppointmentPage: FC = () => {
   }, [isFetching]);
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        minHeight: '100vh',
-      }}
-    >
-      <AppointmentHeader onClose={() => navigate('/visits')} />
-
-      <Box sx={{ display: 'flex', flex: 1, width: '100%' }}>
+    <div className="flex flex-col items-center">
+      <div className="flex flex-1 w-full">
         <AppointmentSidePanel appointmentType="in-person" />
 
-        <Container maxWidth="xl" sx={{ my: 3 }}>
+        <div className="w-full py-3">          
+          <AppointmentHeader onClose={() => navigate(`/patient/${patient?.id}`)} />
           <AppointmentTabs />
-        </Container>
-      </Box>
-    </Box>
+        </div>
+      </div>
+    </div>
   );
 };
