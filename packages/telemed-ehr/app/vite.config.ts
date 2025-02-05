@@ -13,10 +13,19 @@ export default ({ mode }) => {
   return defineConfig({
     envDir: envDir,
     publicDir: 'public',
-    plugins: [react(), viteTsconfigPaths(), svgr()],
+    plugins: [
+      react({
+        jsxImportSource: '@emotion/react',
+        babel: {
+          plugins: ['@emotion/babel-plugin'],
+        },
+      }),
+      viteTsconfigPaths(),
+      svgr(),
+    ],
     resolve: {
       alias: {
-        "@": path.resolve(path.dirname(fileURLToPath(import.meta.url)), "./src"),
+        '@': path.resolve(path.dirname(fileURLToPath(import.meta.url)), './src'),
       },
     },
     server: {
@@ -26,6 +35,9 @@ export default ({ mode }) => {
     build: {
       outDir: './build',
       target: browserslistToEsbuild(),
+    },
+    optimizeDeps: {
+      include: ['@emotion/react', '@emotion/styled', '@mui/material/Tooltip'],
     },
   });
 };

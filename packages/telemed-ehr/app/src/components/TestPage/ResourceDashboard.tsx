@@ -6,6 +6,25 @@ import { ResourceDashboardProps } from './types';
 import { DashboardCard } from './DashboardCard';
 import { Input } from '../ui/input';
 
+/**
+ * Generic dashboard for any resource type
+ * @param resourceType - The type of resource to display
+ * @param resources - The resources to display
+ * @param loading - Whether the resources are loading
+ * @param statistics - The statistics to display
+ * @param renderResourceCard - The function to render the resource card
+ * @param onPageChange - The function to change the page
+ * @param currentPage - The current page
+ * @param totalCount - The total count of resources
+ * @param rowsPerPage - The number of rows per page
+ * @param searchProps - The search props:
+ * { value: string,
+ * onChange: (value: string) => void,
+ * placeholder: string
+ * }
+ * @returns
+ */
+
 export function ResourceDashboard<T extends Resource>({
   resourceType,
   resources,
@@ -19,7 +38,12 @@ export function ResourceDashboard<T extends Resource>({
   searchProps,
 }: ResourceDashboardProps<T>) {
   return (
-    <Accordion type="single" collapsible className="bg-white p-4 rounded-md shadow-sm border-2 border-gray-300">
+    <Accordion
+      type="single"
+      defaultValue="item-1"
+      collapsible
+      className="bg-white p-4 rounded-md shadow-sm border-2 border-gray-300"
+    >
       <AccordionItem value="item-1">
         <AccordionTrigger>
           <h1 className="text-2xl font-bold">{resourceType}s</h1>

@@ -30,6 +30,7 @@ import AddSchedulePage from './pages/AddSchedulePage';
 import Version from './pages/Version';
 import { isErxEnabled } from './helpers/erx';
 import Resources from './components/TestPage/Test';
+import RQAppointmentsPage from './components/TestPage/ReactQuery/RQAppointments';
 import('@photonhealth/elements').catch(console.log);
 
 const TelemedTrackingBoardPageLazy = lazy(async () => {
@@ -133,11 +134,10 @@ function App(): ReactElement {
                   <Route path={`/admin/insurance/:insurance`} element={<EditInsurance />} />
                   <Route path="/admin/states/:state" element={<EditStatePage />} />
 
-
-
                   <Route path="*" element={<Navigate to={'/'} />} />
                   {/* TODO: remove in production */}
                   <Route path="/test" element={<Resources />} />
+                  <Route path="/test/rq" element={<RQAppointmentsPage />} />
                 </>
               )}
               {currentUser?.hasRole([RoleType.Administrator, RoleType.Provider]) && (
