@@ -11,19 +11,15 @@ import { useApiClients } from './hooks/useAppClients';
 import useOttehrUser, { useProviderERXStateStore } from './hooks/useOttehrUser';
 import AddPatient from './pages/AddPatient';
 import AppointmentsPage from './pages/Appointments';
-import EditEmployeePage from './pages/EditEmployee';
 import Logout from './pages/Logout';
 import SchedulePage from './pages/Schedule';
 import SchedulesPage from './pages/Schedules';
 import PatientInformationPage from './pages/PatientInformationPage';
 import PatientsPage from './pages/Patients';
-import AdminPage from './pages/Admin';
 import { TelemedAdminPage } from './pages/TelemedAdminPage';
 import { useNavStore } from './state/nav.store';
 import EditInsurancePage from './telemed/features/telemed-admin/EditInsurance';
 import EditStatePage from './telemed/features/telemed-admin/EditState';
-import EditState from './pages/admin/EditState';
-import EditInsurance from './telemed/features/telemed-admin/EditInsurance';
 import { isLocalOrDevOrTestingOrTrainingEnv } from './telemed/utils/env.helper';
 import { RoleType } from './types/types';
 import { AppointmentPage } from './pages/AppointmentPage';
@@ -31,7 +27,11 @@ import AddSchedulePage from './pages/AddSchedulePage';
 import Version from './pages/Version';
 import { isErxEnabled } from './helpers/erx';
 import Resources from './components/TestPage/Test';
-import EditInsuranceX from './pages/admin/EditInsurance';
+import AdminPage from './pages/admin/Admin';
+import EditEmployeePage from './pages/EditEmployee';
+import EditEmployee from './pages/admin/EditEmployee';
+import EditInsurance from './pages/admin/EditInsurance';
+import EditState from './pages/admin/EditState';
 import('@photonhealth/elements').catch(console.log);
 
 const TelemedTrackingBoardPageLazy = lazy(async () => {
@@ -126,16 +126,15 @@ function App(): ReactElement {
                   <Route path="/telemed-admin" element={<Navigate to={INSURANCES_PATH} />} />
                   <Route path="/telemed-admin/states" element={<TelemedAdminPage />} />
                   <Route path="/telemed-admin/states/:state" element={<EditStatePage />} />
-                  <Route path={INSURANCES_PATH} element={<TelemedAdminPage />} />
-                  <Route path={`${INSURANCES_PATH}/:insurance`} element={<EditInsurance />} />
 
                   <Route path="/admin" element={<AdminPage />} />
                   <Route path="/admin/employee" element={<AdminPage />} />
-                  <Route path="/admin/employee/:id" element={<EditEmployeePage />} />
-                  {/* <Route path="/admin/employee/add" element={<AddEmployeePage />} /> */}
+                  <Route path="/admin/employeex/:id" element={<EditEmployeePage />} />
+                  <Route path="/admin/employee/:id" element={<EditEmployee />} />
+                  <Route path="/admin/employee/new" element={<EditEmployee />} />
                   <Route path="/admin/insurance" element={<AdminPage />} />
-                  <Route path="/admin/insurance/:insurance" element={<EditInsuranceX />} />
-                  <Route path="/admin/insurance/new" element={<EditInsuranceX />} />
+                  <Route path="/admin/insurance/:id" element={<EditInsurance />} />
+                  <Route path="/admin/insurance/new" element={<EditInsurance />} />
                   <Route path="/admin/state" element={<AdminPage />} />
                   <Route path="/admin/state/:state" element={<EditState />} />
 

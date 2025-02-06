@@ -1,78 +1,26 @@
-import * as React from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { InsurancePlan } from "fhir/r4";
-import { useInsuranceMutation, useInsuranceOrganizationsQuery, useInsurancesQuery } from "@/telemed/features/telemed-admin/telemed-admin.queries";
+import { useInsuranceMutation, useInsuranceOrganizationsQuery, 
+    useInsurancesQuery } from "@/telemed/features/telemed-admin/telemed-admin.queries";
 import { PUBLIC_EXTENSION_BASE_URL } from "ehr-utils";
 import { ReactElement, useRef, useState } from "react";
+import { Breadcrumbs } from "./components/Breadcrumbs";
+import { InsuranceSettingsBooleans, INSURANCE_SETTINGS_MAP, 
+        BlankInsuranceForm, InsuranceForm, PayorOrg, 
+        getInsurancePayor, payorbyId, InsuranceData } from "./helpers/Constants";
+
+
 
 let renderCount = 0;
 
-export const INSURANCE_SETTINGS_MAP = {
-    requiresSubscriberId: 'Requires subscriber Id',
-    requiresSubscriberName: 'Requires subscriber name',
-    requiresSubscriberDOB: 'Requires subscriber date of birth',
-    requiresRelationshipToSubscriber: 'Requires relationship to subscriber',
-    requiresInsuranceName: 'Requires insurance name',
-    requiresInsuranceCardImage: 'Requires insurance card image',
-};
 
-type InsuranceSettingsBooleans = {
-    [key in keyof typeof INSURANCE_SETTINGS_MAP]: boolean;
-};
+export default function EditInsurance(): ReactElement {
 
-interface PayorOrg {
-    name?: string;
-    id?: string;
-}
-
-export type InsuranceData = InsuranceSettingsBooleans & {
-    id: InsurancePlan['id'];
-    payor?: PayorOrg;
-    displayName: string;
-    status: Extract<InsurancePlan['status'], 'active' | 'retired'>;
-};
-
-type InsuranceForm = {
-    id?: string | undefined;
-    displayName?: string | undefined;
-    payorId?: string | undefined;
-    settings: InsuranceSettingsBooleans;
-};
-
-const BlankInsuranceForm: InsuranceForm = {
-    id: undefined,
-    displayName: undefined,
-    payorId: undefined,
-    settings: {
-        requiresSubscriberId: false,
-        requiresSubscriberName: false,
-        requiresSubscriberDOB: false,
-        requiresRelationshipToSubscriber: false,
-        requiresInsuranceName: false,
-        requiresInsuranceCardImage: false,
-    }
-};
-
-function getInsurancePayor(insuranceDetails: InsurancePlan, orgs: PayorOrg[]): PayorOrg | undefined {
-    if (!insuranceDetails.ownedBy?.reference) {
-        return undefined;
-    }
-    return orgs.find((org) => org.id === insuranceDetails.ownedBy?.reference?.replace('Organization/', ''));
-}
-
-function payorbyId(payors: PayorOrg[], id: string): PayorOrg | undefined {
-    return payors.find((payor) => payor.id === id);
-}
-
-export default function EditInsuranceX(): ReactElement {
-
-    const { insurance: insuranceIdParam } = useParams();
+    const { id: insuranceIdParam } = useParams();
     const insuranceId = insuranceIdParam;
     const isNew = insuranceId === undefined;
     const didSetInsuranceDetailsForm = useRef(false);
     const [error, setError] = useState('');
-    const navigate = useNavigate();
 
     const { register, getValues, setValue, reset, formState: { errors }   } = useForm<InsuranceForm>({
         defaultValues: BlankInsuranceForm
@@ -164,9 +112,10 @@ export default function EditInsuranceX(): ReactElement {
             setError('Error trying to change insurance configuration status. Please, try again');
           }
     };
-
+    const pageName = isNew ? 'New Insurance' : insuranceDetails?.name;
     return (
         <div className="flex flex-col max-w-7xl mx-auto my-16 px-4 border-gray-500">
+            <Breadcrumbs pageName={pageName} />
             <form 
                 className="p-4 border rounded shadow-md max-w-3xs " 
                 onSubmit={onSubmit}
@@ -174,7 +123,8 @@ export default function EditInsuranceX(): ReactElement {
                 <div>
                     {/*
                     <div>Render Count: {renderCount}</div>
-                    <div>Insurance ID: {isNew ? 'New' : insuranceId}</div>
+                    <div>Insurance ID: {insuranceId}</div>
+                    <div>Is New: {isNew ? 'Yes' : 'No'}</div>
                     <div>Insurance Details: <code>{JSON.stringify(insuranceDetails, null, 2)}</code></div>
                     <div>Insurance Form: <code>{JSON.stringify(getValues(), null, 2)}</code></div>
                     <div>SettingsMap: <code>{JSON.stringify(settingsMap, null, 2)}</code></div>
@@ -219,11 +169,11 @@ export default function EditInsuranceX(): ReactElement {
                         Object.entries(INSURANCE_SETTINGS_MAP).map(([key, value]) => {
                             const settingKey = `settings.${key}` as const;
                             return (
-                                <div key={key} className="flex items-center">
+                                <div key={key} className="flex items-center gap-2">
                                     <input
                                         type="checkbox"
+                                        className="w-5 h-5 text-blue-500 bg-gray-100 border-gray-300 rounded focus:ring-grey-400 focus:ring-2" 
                                         {...register(settingKey)}
-                                        className="mr-2"
                                     />
                                     <span>{value}</span>
                                 </div>
@@ -231,7 +181,7 @@ export default function EditInsuranceX(): ReactElement {
                         })
                     }
                 </div>
-                <div className="mb-4">
+                <div className="mb-4 flex gap-2">
                     <button type="submit" className="px-4 py-2 bg-red-500 text-white rounded">
                         Save
                     </button>

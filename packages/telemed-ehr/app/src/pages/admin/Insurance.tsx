@@ -1,13 +1,18 @@
 import * as React from 'react';
-import { ColumnDef, flexRender, getCoreRowModel, getPaginationRowModel, getSortedRowModel, getFilteredRowModel, useReactTable, } from '@tanstack/react-table';
+import { ColumnDef, flexRender, getCoreRowModel, 
+    getPaginationRowModel, getSortedRowModel, 
+    getFilteredRowModel, useReactTable, } from '@tanstack/react-table';
 import { ChevronDown } from 'lucide-react';
 
 import { BooleanStateChip } from '@/telemed/components/BooleanStateChip';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, 
+    TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuRadioGroup, DropdownMenuRadioItem } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, 
+    DropdownMenuTrigger, DropdownMenuRadioGroup, 
+    DropdownMenuRadioItem } from '@/components/ui/dropdown-menu';
   
 import { Link } from 'react-router-dom';
 import { PlusIcon } from 'lucide-react';
@@ -121,8 +126,8 @@ export default function InsurancePage() {
                             <DropdownMenuRadioItem value=''>Any</DropdownMenuRadioItem>
                             <DropdownMenuRadioItem value='active'>Active</DropdownMenuRadioItem>
                             <DropdownMenuRadioItem value='retired'>Retired</DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value='draft'>Draft</DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value='unknown'>Unknown</DropdownMenuRadioItem>  
+                            {/* <DropdownMenuRadioItem value='draft'>Draft</DropdownMenuRadioItem> 
+                            <DropdownMenuRadioItem value='unknown'>Unknown</DropdownMenuRadioItem>  */}
                         </DropdownMenuRadioGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>

@@ -1,6 +1,10 @@
 import * as React from 'react';
-import { ColumnDef, flexRender, getCoreRowModel, getPaginationRowModel, getSortedRowModel, getFilteredRowModel, useReactTable, } from '@tanstack/react-table';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { 
+  ColumnDef, flexRender, getCoreRowModel, 
+  getPaginationRowModel, getSortedRowModel, 
+  getFilteredRowModel, useReactTable, } from '@tanstack/react-table';
+import { Table, TableBody, TableCell, 
+  TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { BooleanStateChip } from '@/telemed/components/BooleanStateChip';
 import { Checkbox } from '@/components/ui/checkbox';
 import { AllStates, AllStatesToNames, State, StateType } from '@/types/types';

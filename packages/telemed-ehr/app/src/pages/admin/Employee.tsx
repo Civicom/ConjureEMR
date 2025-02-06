@@ -253,7 +253,7 @@ const EmployeesPage = () => {
           </DropdownMenuContent>
         </DropdownMenu>
  
-        <Link to="/admin/employees/add">
+        <Link to="/admin/employee/new">
           <Button className="flex items-center bg-red-500 hover:bg-red-600 font-bold">
             <PlusIcon className="w-4 h-4" />Add Employee
           </Button>
