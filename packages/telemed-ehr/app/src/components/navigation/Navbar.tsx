@@ -27,7 +27,7 @@ export default function Navbar(): ReactElement {
     }, 
     // {name: 'Employees', url: ['/employees', '/employee'],icon: <BriefcaseBusiness className="mx-auto my-auto text-[#4b5c6b] w-[30px] h-[30px]" />
     // }, 
-    {name: 'Admin', url: ['/telemed-admin', '/video-call'],icon: <Lock className="mx-auto my-auto text-[#4b5c6b] w-[30px] h-[30px]" />
+    {name: 'Admin', url: ['/admin', '/admin/employee', '/admin/insurance', '/admin/state'],icon: <Lock className="mx-auto my-auto text-[#4b5c6b] w-[30px] h-[30px]" />
     },
     // {name: 'Telemedicine', url: ['/telemed/appointments', '/video-call', '/telemed/appointments'],icon: <Headset className="mx-auto my-auto text-[#4b5c6b] w-[30px] h-[30px]" />
     // }
