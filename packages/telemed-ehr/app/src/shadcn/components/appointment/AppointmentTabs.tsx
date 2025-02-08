@@ -7,6 +7,7 @@ import { useExamObservations } from '@/telemed/hooks/useExamObservations';
 import { cn } from "@/lib/utils";
 import { Textarea } from '@/components/ui/textarea';
 import { NotebookPen } from 'lucide-react';
+import { NotesTab } from './tabs/NotesTab';
 
 import { EXAM_OBSERVATIONS_FIELDS, useGetChartData } from '@/telemed';
 import { ReviewTab } from '@/telemed/features/appointment/ReviewTab';
@@ -58,11 +59,11 @@ export const AppointmentTabs: FC = () => {
 
   return (
       <div id="appointment-tabs">
-        { currentTab === 'notes' && <TabBox title="Notes" icon="📝">            
-            <Textarea placeholder="Type visit notes here." className='h-96' />
-        </TabBox> }
-        { currentTab === 'sign' && <TabBox title="Apply and Sign" icon="✍">          
-          <ReviewTab />
+        { currentTab === 'notes' &&            
+            <NotesTab />
+        }
+        { currentTab === 'sign' && <TabBox title="Apply and Sign" icon="✍">
+          <MedicalHistoryTab />
         </TabBox> }
       </div>
   );

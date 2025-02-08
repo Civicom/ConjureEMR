@@ -25,7 +25,8 @@ import {
 
 export const AppointmentPage: FC = () => {
   const { id } = useParams();
-  useIsReadOnly();
+  // TODO: Review and modify setter for read only mode
+  //useIsReadOnly();
 
   const navigate = useNavigate();
 
