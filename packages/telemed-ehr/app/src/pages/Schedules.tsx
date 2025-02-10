@@ -2,7 +2,7 @@ import { ReactElement, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScheduleTable } from '../components/schedule/ScheduleTable';
 import { CalendarDays } from 'lucide-react';
-
+import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 
 export default function LocationsPage(): ReactElement {
   return (
@@ -36,15 +36,15 @@ export default function LocationsPage(): ReactElement {
               </TabsList>
 
               <TabsContent value="offices">
-                <ScheduleTable scheduleType="office" />
+                <ScheduleTable scheduleType="office"/>
               </TabsContent>
               
               <TabsContent value="providers">
-                <ScheduleTable scheduleType="provider" />
+                <ScheduleTable scheduleType="provider"/>
               </TabsContent>
 
               <TabsContent value="groups">
-                <ScheduleTable scheduleType="group" />
+                <ScheduleTable scheduleType="group"/>
               </TabsContent>
             </Tabs>
           </div>

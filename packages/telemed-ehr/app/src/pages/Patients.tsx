@@ -15,6 +15,8 @@ import { TabsDemo } from '@/shadcn/components/Tabs';
 import { Download, PlusIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Grid, Paper } from '@mui/material';
+import { Search, Plus } from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 async function getPatientsAndRelatedPersons(
   searchParams: SearchParam[],
@@ -87,36 +89,66 @@ export default function PatientsPage(): ReactElement {
   const [totalPatients, setTotalPatients] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
 
-  // Add new effect to fetch initial patients
-  useEffect(() => {
-    async function fetchInitialPatients(): Promise<void> {
-      if (!fhirClient) return;
+  const [inactivePatients, setInactivePatients] = useState<Patient[] | null>(null);
+  const [inactiveRelatedPersons, setInactiveRelatedPersons] = useState<RelatedPerson[] | null>(null);
+  const [totalInactivePatients, setTotalInactivePatients] = useState<number>(0);
 
-      setLoading(true);
+  const [inactiveLoading, setInactiveLoading] = useState<boolean>(false);
 
-      // Basic search params to get all patients with related persons
-      const fhirSearchParams: SearchParam[] = [
-        // Ensure we get patients with related persons
+  // Combined useEffect for fetching both active and inactive patients
+useEffect(() => {
+  async function fetchPatients(): Promise<void> {
+    if (!fhirClient) return;
+
+    setLoading(true);
+    setInactiveLoading(true);
+
+    try {
+      // Fetch active patients
+      const activeSearchParams: SearchParam[] = [
+        { name: 'active', value: 'true' },
         { name: '_has:RelatedPerson:patient:phone:missing', value: 'false' },
-        // You might want to add pagination params here
-        { name: '_count', value: '50' }, // Adjust the page size as needed
-        // Add any other default filters you need
+        { name: '_count', value: '1000000' },
       ];
 
-      const resources = await getPatientsAndRelatedPersons(fhirSearchParams, null, fhirClient);
+      // Fetch inactive patients
+      const inactiveSearchParams: SearchParam[] = [
+        { name: 'active', value: 'false' },
+        { name: '_has:RelatedPerson:patient:phone:missing', value: 'false' },
+        { name: '_count', value: '1000000' }
+      ];
 
-      setPatients(resources.patients);
-      setRelatedPersons(resources.relatedPersons);
-      setTotalPatients(resources.total);
-    }
 
-    // Only fetch initial patients if no search is active
-    if (!submittedName && !submittedPhone) {
-      fetchInitialPatients()
-        .catch((error) => console.log(error))
-        .finally(() => setLoading(false));
+      // Fetch both in parallel using Promise.all
+      const [activeResources, inactiveResources] = await Promise.all([
+        getPatientsAndRelatedPersons(activeSearchParams, null, fhirClient),
+        getPatientsAndRelatedPersons(inactiveSearchParams, null, fhirClient)
+      ]);
+
+      // Set active patients data
+      setPatients(activeResources.patients);
+      setRelatedPersons(activeResources.relatedPersons);
+      setTotalPatients(activeResources.total);
+
+      // Set inactive patients data
+      setInactivePatients(inactiveResources.patients);
+      setInactiveRelatedPersons(inactiveResources.relatedPersons);
+      setTotalInactivePatients(inactiveResources.total);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+      setInactiveLoading(false);
     }
-  }, [fhirClient]); // Only depend on fhirClient
+  }
+
+  // Only fetch if no search is active
+  if (!submittedName && !submittedPhone) {
+    fetchPatients();
+  }
+}, [fhirClient]);
+
+
 
   // Update query params in the url when filters change
   useEffect(() => {
@@ -147,86 +179,12 @@ export default function PatientsPage(): ReactElement {
     }
   }, [submittedName, submittedPhone]);
 
-  // OLD
-  // Fetch patients when filters change
-  // useEffect(() => {
-  //   async function setPatientsAndRelatedPersons(): Promise<void> {
-  //     if (
-  //       !fhirClient ||
-  //       (!submittedName && !submittedPhone) ||
-  //       (submittedName && submittedName?.length < 3) ||
-  //       (submittedPhone && submittedPhone?.length < 10)
-  //     ) {
-  //       return;
-  //     }
-
-  //     setLoading(true);
-
-  //     const fhirSearchParams: SearchParam[] = getPatientNameSearchParams({ submittedName: submittedName || undefined });
-  //     const digits = submittedPhone?.replace(/\D/g, '');
-  //     if (submittedPhone) {
-  //       fhirSearchParams.push({ name: '_has:RelatedPerson:patient:phone', value: `${digits},+1${digits}` });
-  //     } else {
-  //       fhirSearchParams.push({ name: '_has:RelatedPerson:patient:phone:missing', value: 'false' });
-  //     }
-
-  //     const resources = await getPatientsAndRelatedPersons(fhirSearchParams, submittedPhone, fhirClient);
-
-  //     setPatients(resources.patients);
-  //     setRelatedPersons(resources.relatedPersons);
-  //     setTotalPatients(resources.total);
-  //   }
-
-  //   setPatientsAndRelatedPersons()
-  //     .catch((error) => console.log(error))
-  //     .finally(() => setLoading(false));
-  // }, [fhirClient, submittedName, submittedPhone]);
-
-  // NEW - modified to work alongside initial fetching
-  useEffect(() => {
-    async function setPatientsAndRelatedPersons(): Promise<void> {
-      if (!fhirClient) return;
-
-      // Only proceed with search if there are search terms
-      if (submittedName || submittedPhone) {
-        setLoading(true);
-
-        const fhirSearchParams: SearchParam[] = getPatientNameSearchParams({
-          submittedName: submittedName || undefined,
-        });
-
-        const digits = submittedPhone?.replace(/\D/g, '');
-        if (submittedPhone) {
-          fhirSearchParams.push({
-            name: '_has:RelatedPerson:patient:phone',
-            value: `${digits},+1${digits}`,
-          });
-        } else {
-          fhirSearchParams.push({
-            name: '_has:RelatedPerson:patient:phone:missing',
-            value: 'false',
-          });
-        }
-
-        const resources = await getPatientsAndRelatedPersons(fhirSearchParams, submittedPhone, fhirClient);
-
-        setPatients(resources.patients);
-        setRelatedPersons(resources.relatedPersons);
-        setTotalPatients(resources.total);
-      }
-    }
-
-    setPatientsAndRelatedPersons()
-      .catch((error) => console.log(error))
-      .finally(() => setLoading(false));
-  }, [fhirClient, submittedName, submittedPhone]);
-
   const handleFormSubmit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
     setSubmittedName(patientNameFilter);
     setSubmittedPhone(phoneFilter);
   };
-
+  
   // Initially - search is done through using url location
   // Current - search is client side but doesnt automatically update the url
   // Plan - search is client side and should update the url
@@ -238,28 +196,51 @@ export default function PatientsPage(): ReactElement {
         <div className="space-y-8">
           <div className="flex justify-between items-center">
             <div className="space-y-2">
-              <h1 className="text-3xl font-bold">Patients</h1>
-              <p className="text-md text-muted-foreground">View and manage your patients</p>
+              <h1 className="text-3xl font-bold">🤕 Patients</h1>
+              <p className="text-md text-muted-foreground">View and manage your Patients</p>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" className="bg-white">
+              {/* <Button variant="outline" className="bg-white">
                 <Download className="w-4 h-4" /> Export
-              </Button>
-              <Link to="/visits/add">
-                <Button className="flex items-center bg-teal-500 hover:bg-teal-600 font-bold">
-                  <PlusIcon className="w-4 h-4" />
+              </Button> */}
+              <Link to={`/visits/add`} className="flex items-center gap-2">
+                  <Button className="flex items-center font-bold capitalize bg-[#D3455B] hover:bg-[#b52b40] text-white">
+                  <Plus className="mr-2 h-4 w-4" />
                   Add Patient
-                </Button>
+                  </Button>
               </Link>
             </div>
           </div>
-          <TabsDemo />
-          <PatientTable
-            fhirPatients={patients}
-            relatedPersons={relatedPersons}
-            total={totalPatients}
-            patientsLoading={loading}
-          />
+
+          <Tabs defaultValue="activePatients" className="w-full">
+            <TabsList className="w-full">
+              <TabsTrigger value="activePatients" className="flex justify-center text-center">
+                Active Patients
+              </TabsTrigger>
+              <TabsTrigger value="inactivePatients" className="flex justify-center text-center">
+                Inactive Patients
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="activePatients">
+              <PatientTable
+                fhirPatients={patients}
+                relatedPersons={relatedPersons}
+                total={totalPatients}
+                patientsLoading={loading}
+              />
+            </TabsContent>
+
+            <TabsContent value="inactivePatients">
+              <PatientTable
+                fhirPatients={inactivePatients}
+                relatedPersons={inactiveRelatedPersons}
+                total={totalInactivePatients}
+                patientsLoading={inactiveLoading}
+              />
+            </TabsContent>
+          </Tabs>
+
+          
         </div>
       </div>
     </div>

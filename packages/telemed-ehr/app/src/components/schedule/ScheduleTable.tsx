@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Skeleton } from '@/components/ui/skeleton';
 
 import { HealthcareService, Location, Practitioner, Resource } from 'fhir/r4';
 import { formatAddress, formatHumanName } from '@zapehr/sdk';
@@ -23,7 +24,7 @@ import { OVERRIDE_DATE_FORMAT } from '../../helpers/formatDateTime';
 
 export type ScheduleType = 'office' | 'provider' | 'group';
 
-interface ScheduleInformationTableProps {
+interface ScheduleTableProps {
   scheduleType: ScheduleType;
 }
 
@@ -31,68 +32,109 @@ const SCHEDULE_CHANGES_FORMAT = 'MMM d';
 
 // Define the interface for your data
 interface ScheduleItem {
-  id: string
-  name: string
-  address: string
-  todaysHours: string
-  upcomingChanges: string
+    id: string
+    name: string
+    address: string
+    todaysHours: string
+    upcomingChanges: string
 }
 
 export function getName(item: Resource): string {
     let name = undefined;
     if (item.resourceType === 'Location') {
-    name = (item as Location)?.name;
+        name = (item as Location)?.name;
     } else if (item.resourceType === 'Practitioner') {
-    const nameTemp = (item as Practitioner)?.name;
-    if (nameTemp) {
-        name = formatHumanName(nameTemp[0]);
-    }
+        const nameTemp = (item as Practitioner)?.name;
+        if (nameTemp) {
+            name = formatHumanName(nameTemp[0]);
+        }
     } else if (item.resourceType === 'HealthcareService') {
-    name = (item as HealthcareService)?.name;
+        name = (item as HealthcareService)?.name;
     } else {
-    console.log('getName called with unavailable resource', item);
-    throw Error('getName called with unavailable resource');
+        console.log('getName called with unavailable resource', item);
+        throw Error('getName called with unavailable resource');
     }
-
+    
     if (!name) {
-    return 'Undefined name';
+        return 'Undefined name';
     }
     return name;  
 }
 
 type Item = Location | Practitioner;
 
-export const ScheduleTable = ({ scheduleType }: ScheduleInformationTableProps): ReactElement => {
-    const [searchQuery, setSearchQuery] = useState<string>("")
+const POLLING_INTERVAL = 5 * 60 * 1000; // 5 minutes in milliseconds
 
+export const ScheduleTable = ({ scheduleType }: ScheduleTableProps): ReactElement => {
+    const [searchQuery, setSearchQuery] = useState<string>("")
+    
     const { fhirClient } = useApiClients();
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [pageNumber, setPageNumber] = useState(0);
     const [searchText, setSearchText] = useState('');
     const [items, setItems] = useState<Location[] | Practitioner[] | undefined>(undefined);
     const [loading, setLoading] = useState<boolean>(false);
-        
-    useEffect(() => {
-        async function getItems(schedule: 'Location' | 'Practitioner' | 'HealthcareService'): Promise<void> {
+    // const [isLoading, setIsLoading] = useState(true);
+    
+    // Modify the existing useEffect to be a separate function we can reuse
+    const fetchItems = async (schedule: 'Location' | 'Practitioner' | 'HealthcareService') => {
         if (!fhirClient) {
             return;
         }
         setLoading(true);
-        const itemsTemp = (await fhirClient.searchResources<Item>({
-            resourceType: schedule,
-            searchParams: [{ name: '_count', value: '1000' }],
-        })) as any;
-        setItems(itemsTemp);
-        setLoading(false);
+        try {
+            const itemsTemp = (await fhirClient.searchResources<Item>({
+                resourceType: schedule,
+                searchParams: [{ name: '_count', value: '1000' }],
+            })) as any;
+            setItems(itemsTemp);
+        } catch (error) {
+            console.error('Error fetching items:', error);
+        } finally {
+            setLoading(false);
         }
-        if (scheduleType === 'office') {
-        void getItems('Location');
-        } else if (scheduleType === 'provider') {
-        void getItems('Practitioner');
-        } else if (scheduleType === 'group') {
-        void getItems('HealthcareService');
-        }
+    };
+     // Initial data fetch
+     useEffect(() => {
+        const schedule = scheduleType === 'office' 
+            ? 'Location' 
+            : scheduleType === 'provider' 
+                ? 'Practitioner' 
+                : 'HealthcareService';
+
+         // Initial fetch        
+        void fetchItems(schedule);
+
+        // Set up polling interval
+        const intervalId = setInterval(() => {
+            void fetchItems(schedule);
+        }, POLLING_INTERVAL);
+
+        // Cleanup interval on component unmount
+        return () => clearInterval(intervalId);
     }, [fhirClient, scheduleType]);
+
+    // useEffect(() => {
+    //     async function getItems(schedule: 'Location' | 'Practitioner' | 'HealthcareService'): Promise<void> {
+    //     if (!fhirClient) {
+    //         return;
+    //     }
+    //     setLoading(true);
+    //     const itemsTemp = (await fhirClient.searchResources<Item>({
+    //         resourceType: schedule,
+    //         searchParams: [{ name: '_count', value: '1000' }],
+    //     })) as any;
+    //     setItems(itemsTemp);
+    //     setLoading(false);
+    //     }
+    //     if (scheduleType === 'office') {
+    //     void getItems('Location');
+    //     } else if (scheduleType === 'provider') {
+    //     void getItems('Practitioner');
+    //     } else if (scheduleType === 'group') {
+    //     void getItems('HealthcareService');
+    //     }
+    // }, [fhirClient, scheduleType]);
 
     const filteredItems = useMemo(() => {
         if (!items) {
@@ -248,6 +290,29 @@ export const ScheduleTable = ({ scheduleType }: ScheduleInformationTableProps): 
         return undefined;
     }
 
+    function TableSkeleton() {
+        return (
+            <TableBody>
+            {[...Array(10)].map((_, i) => (
+                <TableRow key={i} className="bg-white">
+                    <TableCell className="w-[25%]">
+                        <Skeleton className="my-1 h-5 w-[200px]" />
+                    </TableCell>
+                    <TableCell className="w-[25%]">
+                        <Skeleton className="h-5 w-[180px]" />
+                    </TableCell>
+                    <TableCell className="w-[25%]">
+                        <Skeleton className="h-5 w-[150px]" />
+                    </TableCell>
+                    <TableCell className="w-[25%]">
+                        <Skeleton className="h-5 w-[160px]" />
+                    </TableCell>
+                </TableRow>
+            ))}
+            </TableBody>
+        );
+    }
+
   return (
     <>
         <div className="w-full mt-6">
@@ -280,35 +345,39 @@ export const ScheduleTable = ({ scheduleType }: ScheduleInformationTableProps): 
                             <TableHead className="w-[25%] font-light">Upcoming Schedule Changes</TableHead>
                         </TableRow>
                     </TableHeader>
-                    <TableBody>
-                        {pageItems.map((item: Item) => (
-                            <TableRow key={item.id} className="bg-white">
-                            <TableCell>
-                                <Link 
-                                to={`/schedule/${scheduleType}/${item.id}`}
-                                className="text-[#D3455B] hover:text-[#b52b40] hover:underline font-bold"
-                                >
-                                {getName(item)}
-                                </Link>
-                            </TableCell>
-                            <TableCell>
-                                {item.resourceType === 'Location'
-                                ? item.address && formatAddress(item.address)
-                                : (item.address ? formatAddress(item.address[0]) : 'No address')}
-                            </TableCell>
-                            <TableCell>
-                                {getHoursOfOperationForToday(item, 'open') && getHoursOfOperationForToday(item, 'close')
-                                ? `${getHoursOfOperationForToday(item, 'open')} -
-                                            ${getHoursOfOperationForToday(item, 'close')}`
-                                : 'No scheduled hours'}</TableCell>
-                            <TableCell>
-                                <span className={`${getItemOverrideInformation(item) ? "text-black" : "text-muted-foreground"}`}>
-                                    {getItemOverrideInformation(item) ? getItemOverrideInformation(item) : 'None Scheduled'}
-                                </span>
-                            </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
+                    {loading ? (
+                        <TableSkeleton />
+                        ) : (
+                            <TableBody>
+                                {pageItems.map((item: Item) => (
+                                    <TableRow key={item.id} className="bg-white">
+                                    <TableCell>
+                                        <Link 
+                                        to={`/schedule/${scheduleType}/${item.id}`}
+                                        className="text-[#D3455B] hover:text-[#b52b40] hover:underline font-bold"
+                                        >
+                                        {getName(item)}
+                                        </Link>
+                                    </TableCell>
+                                    <TableCell>
+                                        {item.resourceType === 'Location'
+                                        ? item.address && formatAddress(item.address)
+                                        : (item.address ? formatAddress(item.address[0]) : 'No address')}
+                                    </TableCell>
+                                    <TableCell>
+                                        {getHoursOfOperationForToday(item, 'open') && getHoursOfOperationForToday(item, 'close')
+                                        ? `${getHoursOfOperationForToday(item, 'open')} -
+                                                    ${getHoursOfOperationForToday(item, 'close')}`
+                                        : 'No scheduled hours'}</TableCell>
+                                    <TableCell>
+                                        <span className={`${getItemOverrideInformation(item) ? "text-black" : "text-muted-foreground"}`}>
+                                            {getItemOverrideInformation(item) ? getItemOverrideInformation(item) : 'None Scheduled'}
+                                        </span>
+                                    </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        )}
                 </Table>
             </div>
         </div>

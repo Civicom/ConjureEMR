@@ -37,6 +37,11 @@ import { getInitials } from '@/lib/utils';
 import { formatISODateToLocaleDate } from '@/helpers/formatDateTime';
 import { Skeleton } from '@/components/ui/skeleton';
 
+const formatDateString = (dateString: string) => {
+  const [year, month, day] = dateString.split('-');
+  return `${parseInt(month)}/${parseInt(day)}/${year}`;
+};
+
 export const columns: ColumnDef<Patient>[] = [
   {
     id: 'select',
@@ -45,6 +50,8 @@ export const columns: ColumnDef<Patient>[] = [
         checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
+        // className="border-[#D3455B] data-[state=checked]:bg-red-500 data-[state=checked]:border-red-500"
+        className="data-[state=checked]:bg-red-500 data-[state=checked]:border-red-500"
       />
     ),
     cell: ({ row }) => (
@@ -52,6 +59,8 @@ export const columns: ColumnDef<Patient>[] = [
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label="Select row"
+        // className="border-red-500 data-[state=checked]:bg-red-500 data-[state=checked]:border-red-500"
+        className="data-[state=checked]:bg-red-500 data-[state=checked]:border-red-500"
       />
     ),
     enableSorting: false,
@@ -68,19 +77,22 @@ export const columns: ColumnDef<Patient>[] = [
       );
     },
     cell: ({ row }) => {
-      // Add the Link component here
       const name = row.getValue('name') as string;
       const initials = getInitials(name);
 
       return (
-        <div className="text-black flex items-center gap-4">
-          <Avatar className="w-8 h-8">
+        <Link to={`/patient/${row.original.id}`} className="text-black flex items-center gap-4 hover:text-[#b52b40] hover:underline hover:text-[#b52b40]">
+          {/* <Avatar className="w-8 h-8">
             <AvatarImage src={`https://randomuser.me/api/portraits/med/men/${Math.floor(Math.random() * 100)}.jpg`} />
-            <AvatarFallback className="bg-blue-50 text-black">{initials}</AvatarFallback>
-          </Avatar>
+            <AvatarFallback className="text-red-500 text-l font-bold">{initials}</AvatarFallback>
+          </Avatar> */}
+          <div className="p-1 w-fit h-fit bg-[#F6DADE] text-[#D3455B] flex items-center justify-center rounded-full font-bold">
+              {initials}
+          </div>
 
-          <span className="font-bold">{name}</span>
-        </div>
+
+          <span className="text-[#D3455B]  font-bold">{name}</span>
+        </Link>
       );
     },
   },
@@ -88,8 +100,10 @@ export const columns: ColumnDef<Patient>[] = [
     accessorKey: 'dob',
     header: 'Date of Birth',
     cell: ({ row }) => {
-      const date = new Date(row.getValue('dob'));
-      return <div>{date.toLocaleDateString()}</div>;
+      // const date = new Date(row.getValue('dob'));
+      // return <div>{date.toLocaleDateString()}</div>;
+      const dateStr = row.getValue('dob') as string;
+      return <div>{formatDateString(dateStr)}</div>;
     },
   },
   {
@@ -141,12 +155,21 @@ export const columns: ColumnDef<Patient>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(patient.id)}>
+            {/* <DropdownMenuItem onClick={() => navigator.clipboard.writeText(patient.id)}> */}
+            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(patient.id ?? '')}>
               Copy patient ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View patient details</DropdownMenuItem>
-            <DropdownMenuItem>View medical history</DropdownMenuItem>
+            <DropdownMenuItem>
+              <Link to={`/patient/${row.original.id}`} className="text-black">
+                View patient details
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Link to={`/patient/${row.original.id}`} className="text-black">
+                View medical history
+              </Link>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -176,88 +199,6 @@ export function PatientTable({ fhirPatients, relatedPersons, total, patientsLoad
   const [patientRows, setPatientRows] = useState<PatientRow[] | null>(null);
   const [rowsLoading, setRowsLoading] = useState<boolean>(false);
 
-  // OLD
-  // Get all info for patient rows
-  // useEffect(() => {
-  //   async function setPatientRowInfo(fhirPatients: Patient[] | null): Promise<void> {
-  //     if (!fhirPatients) {
-  //       setPatientRows(null);
-  //       return;
-  //     }
-
-  //     setRowsLoading(true);
-  //     const appointmentRequests: BatchInputGetRequest[] = [];
-
-  //     // Get patient name, DOB
-  //     const patientInfo = fhirPatients.reduce((accumulator: PatientRow[], fhirPatient) => {
-  //       const selectedTags = [OTTEHR_MODULE.UC, OTTEHR_MODULE.TM].join(',');
-  //       appointmentRequests.push({
-  //         method: 'GET',
-  //         url: `/Appointment?_tag=${selectedTags}&actor=Patient/${fhirPatient.id}&_has:Encounter:appointment:status=finished&_elements=participant,start&_sort=-date&_count=1`,
-  //       });
-
-  //       accumulator.push({
-  //         id: fhirPatient.id,
-  //         patient: fhirPatient.name && convertFhirNameToDisplayName(fhirPatient.name[0]),
-  //         dateOfBirth: fhirPatient.birthDate,
-  //         phone: standardizePhoneNumber(
-  //           relatedPersons
-  //             ?.find((rp) => rp.patient.reference === `Patient/${fhirPatient.id}`)
-  //             ?.telecom?.find((telecom) => telecom.system === 'phone')?.value,
-  //         ),
-  //       });
-
-  //       return accumulator;
-  //     }, []);
-
-  //     // Search for last appointments
-  //     const appointments: Appointment[] = [];
-
-  //     const bundle = await fhirClient?.batchRequest({
-  //       requests: appointmentRequests,
-  //     });
-  //     const bundleAppointments =
-  //       bundle?.entry?.map((entry) => {
-  //         const innerBundle = entry?.resource && (entry.resource as Bundle);
-  //         return innerBundle?.entry?.[0]?.resource as Appointment;
-  //       }) || [];
-
-  //     appointments.push(...bundleAppointments);
-
-  //     // Get the patient's last visit and last office
-  //     appointments.forEach((appointment) => {
-  //       if (!appointment) {
-  //         return;
-  //       }
-
-  //       const patientID = appointment.participant
-  //         .find((participant) => participant.actor?.reference?.startsWith('Patient'))
-  //         ?.actor?.reference?.replace('Patient/', '');
-  //       const locationID = appointment.participant
-  //         .find((participant) => participant.actor?.reference?.startsWith('Location'))
-  //         ?.actor?.reference?.replace('Location/', '');
-  //       const locationResource = locations?.find((location) => location.id === locationID);
-  //       const locationState = locationResource?.address?.state;
-  //       const locationCity = locationResource?.address?.city;
-
-  //       const index = patientInfo.findIndex((info) => info.id === patientID);
-  //       patientInfo[index] = {
-  //         ...patientInfo[index],
-  //         lastVisit: appointment.start,
-  //         lastOffice: locationState && locationCity && `${locationState.toUpperCase()}-${locationCity}`,
-  //       };
-  //     });
-
-  //     setRowsLoading(false);
-  //     setPatientRows(patientInfo);
-  //   }
-
-  //   setPatientRowInfo(fhirPatients)
-  //     .catch((error) => console.log(error))
-  //     .finally(() => setRowsLoading(false));
-  // }, [fhirClient, fhirPatients, locations, relatedPersons]);
-
-  // NEW
   useEffect(() => {
     async function setPatientRowInfo(fhirPatients: Patient[] | null): Promise<void> {
       if (!fhirPatients) {
@@ -301,12 +242,13 @@ export function PatientTable({ fhirPatients, relatedPersons, total, patientsLoad
           // lastOffice: latestAppointment?.includedResources[0]?.name || '',
           // TODO: Fix issue with includedResources[0] not being a Location
           // TODO: Fix issue with lastOffice not being populated
-          lastOffice: 'TODO: Check code' || '',
+          lastOffice: locationResource && 'name' in locationResource ? locationResource.name : '',
         };
       });
 
       setRowsLoading(false);
-      setPatientRows(patientInfo);
+      // setPatientRows(patientInfo);
+      setPatientRows(patientInfo as PatientRow[]);
     }
 
     setPatientRowInfo(fhirPatients)
@@ -331,15 +273,15 @@ export function PatientTable({ fhirPatients, relatedPersons, total, patientsLoad
       lastOffice: row.lastOffice || '',
     }));
   }, [patientRows]);
-
   const table = useReactTable({
-    data: tableData, // Use the transformed data instead of static data
+    data: tableData as unknown as Patient[], // Convert to unknown first to avoid type error
     columns,
     initialState: {
       pagination: {
         pageSize: 10,
       },
     },
+
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -379,10 +321,11 @@ export function PatientTable({ fhirPatients, relatedPersons, total, patientsLoad
           placeholder="Filter name..."
           value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
           onChange={(event) => table.getColumn('name')?.setFilterValue(event.target.value)}
-          className="max-w-sm"
+          className="max-w-[200px]"
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
+
             <Button variant="outline" className="ml-auto">
               Columns <ChevronDown />
             </Button>
@@ -430,9 +373,8 @@ export function PatientTable({ fhirPatients, relatedPersons, total, patientsLoad
                   <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
-                        <Link to={`/patient/${row.original.id}`} className="block -m-4 p-4">
+                        
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </Link>
                       </TableCell>
                     ))}
                   </TableRow>

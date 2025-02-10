@@ -65,7 +65,9 @@ export default function PatientInformationPage(): JSX.Element {
   const [otherPatientsWithSameName, setOtherPatientsWithSameName] = useState<boolean>(false);
 
   const { id } = useParams();
+  const { id: patientId } = useParams();
 
+  console.log('patient: ', patient);
   useEffect(() => {
     async function getPatient(): Promise<void> {
       if (!fhirClient || !id) {
@@ -159,12 +161,49 @@ export default function PatientInformationPage(): JSX.Element {
 
   // console.log('patient information appointments: ', appointments[0]);
 
+  const handleUpdatePatient = async (updatedPatient: Patient): Promise<void> => {
+    if (!fhirClient || !patientId) {
+      throw new Error('FHIR client or patient ID not available');
+    }
+  
+    try {
+       // Log the incoming update
+      console.log('Attempting to update patient with:', updatedPatient);
+      
+      // Create a minimal update payload
+      const patientToUpdate: Patient = {
+        resourceType: 'Patient',
+        id: patientId,
+        meta: patient?.meta,
+        active: patient?.active,
+         // Preserve existing data
+        name: patient?.name,
+        birthDate: updatedPatient.birthDate || patient?.birthDate,
+        telecom: updatedPatient.telecom || patient?.telecom,
+        address: updatedPatient.address || patient?.address,
+        // Explicitly set gender
+        gender: updatedPatient.gender || patient?.gender,
+      };
+  
+      console.log('Updating patient with:', patientToUpdate);
+  
+      // Update the call to match FHIR API expectations
+      const response = await fhirClient.updateResource(patientToUpdate);
+      
+      setPatient(prevPatient => ({ ...prevPatient, ...patientToUpdate }));
+  
+    } catch (error) {
+      console.error('Failed to update patient:', error);
+      throw error;
+    }
+  };
+
   return (
     <>
       <ScrollToTop />
       <div className="m-8">
         <div className="flex gap-4 flex-col lg:flex-row">
-          <PatientInfoCard patient={patient} loading={loading} lastAppointment={appointments?.[0]?.dateTime} />
+          <PatientInfoCard patient={patient} loading={loading} lastAppointment={appointments?.[0]?.dateTime} onUpdatePatient={handleUpdatePatient} patientId={patientId} />
           <div className="bg-gray-50 flex-1 py-4 space-y-4">
             <BreadcrumbPatient
               loading={loading}

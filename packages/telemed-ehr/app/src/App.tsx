@@ -30,6 +30,7 @@ import AddSchedulePage from './pages/AddSchedulePage';
 import Version from './pages/Version';
 import { isErxEnabled } from './helpers/erx';
 import Resources from './components/TestPage/Test';
+import { Toaster } from './components/ui/toaster';
 import('@photonhealth/elements').catch(console.log);
 
 const TelemedTrackingBoardPageLazy = lazy(async () => {
@@ -172,6 +173,7 @@ function App(): ReactElement {
           </Routes>
         </TabContext>
       </BrowserRouter>
+      <Toaster />
     </CustomThemeProvider>
   );
 }

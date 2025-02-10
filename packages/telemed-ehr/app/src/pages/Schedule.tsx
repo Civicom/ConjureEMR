@@ -402,25 +402,25 @@ export default function SchedulePage(): ReactElement {
 
         {item ? (
           <>
-            <CustomBreadcrumbs
-              chain={[
-                { link: '/schedules', children: 'Schedules' },
-                { link: '#', children: getName(item) || <Skeleton width={150} /> },
-              ]}
-            />
-
-            <h1 className="mt-4 text-3xl font-semibold text-black">
-              {getName(item)}
-            </h1>
-
-            {(item.resourceType === 'Location' || item.resourceType === 'Practitioner') && (
-              <p className="mb-4 font-normal">
-                {item.resourceType === 'Location'
-                  ? item.address && addressStringFromAddress(item.address)
-                  : item.address && addressStringFromAddress(item.address[0])}
-              </p>
-            )}
             <ToastProvider>
+              <CustomBreadcrumbs
+                chain={[
+                  { link: '/schedules', children: 'Schedules' },
+                  { link: '#', children: getName(item) || <Skeleton width={150} /> },
+                ]}
+              />
+
+              <h1 className="mt-4 text-3xl font-semibold text-black">
+                {getName(item)}
+              </h1>
+
+              {(item.resourceType === 'Location' || item.resourceType === 'Practitioner') && (
+                <p className="mb-4 font-normal">
+                  {item.resourceType === 'Location'
+                    ? item.address && addressStringFromAddress(item.address)
+                    : item.address && addressStringFromAddress(item.address[0])}
+                </p>
+              )}
               <Tabs defaultValue="schedule" className="mt-4">
                 <TabsList>
                   <TabsTrigger value="schedule">Schedule</TabsTrigger>

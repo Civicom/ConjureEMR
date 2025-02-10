@@ -1,19 +1,23 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Appointment, Location, Patient, RelatedPerson, Resource } from 'fhir/r4';
+import { Appointment, Location, Patient, RelatedPerson, Resource, PatientContact, Address, ContactPoint} from 'fhir/r4';
 import {
   Cake,
   Calendar,
   CalendarPlus2,
+  Clock,
   Clock1,
   EllipsisVertical,
   File,
+  FileText,
   Home,
   Mail,
   MessageSquare,
   Phone,
   UserRound,
   Video,
+  User,
+  LucideIcon,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -23,69 +27,159 @@ import { calculateAge, getInitials } from '@/lib/utils';
 import { formatISODateToLocaleDate, formatISOStringToDateAndTime } from '../../helpers/formatDateTime';
 import { Skeleton } from '@/components/ui/skeleton';
 
-// const visitInfoFields = [
-//   {
-//     label: 'Last visit',
-//     icon: Calendar,
-//     value: '01/01/2025',
-//   },
-//   {
-//     label: 'Paperwork last updated',
-//     icon: File,
-//     value: '12/26/2024',
-//   },
-// ];
-// const patientInfoFields = [
-//   {
-//     label: 'Gender',
-//     icon: UserRound,
-//     value: 'Male',
-//   },
-//   {
-//     label: 'Age',
-//     icon: Clock1,
-//     value: '32',
-//   },
-//   {
-//     label: 'Birthday',
-//     icon: Cake,
-//     value: '01/01/2000',
-//   },
-// ];
+import { EditableField } from './EditableField';
+import { useToast } from '../../hooks/use-toast';
 
-// const contactInfoFields = [
-//   {
-//     label: 'Phone',
-//     icon: Phone,
-//     value: '(000) 000-0000',
-//   },
-//   {
-//     label: 'Email',
-//     icon: Mail,
-//     value: 'johnny@walker.com',
-//   },
-//   {
-//     label: 'Address',
-//     icon: Home,
-//     value: '1234 Main St, Anytown, USA',
-//   },
-// ];
-//
-// const sections = [
-//   { title: '', fields: visitInfoFields },
-//   { title: 'Patient Information', fields: patientInfoFields },
-//   { title: 'Contact Information', fields: contactInfoFields },
-// ];
+import { formatAddress } from '@zapehr/sdk';
+import { standardizePhoneNumber } from '../../../../../ehr-utils';
+
+interface RelatedPersonUpdate {
+  resourceType: 'RelatedPerson';
+  id: string;
+  telecom: ContactPoint[];
+}
+
+interface PatientField {
+  label: string;
+  value: string;
+  icon: LucideIcon;
+  editable?: boolean;
+  type?: 'text' | 'date' | 'select';
+  options?: string[];
+  onUpdate?: (value: string) => Promise<void>;
+}
+
+interface Section {
+  title?: string;
+  fields: PatientField[];
+}
 
 export function PatientInfoCard({
   patient,
   loading,
   lastAppointment,
+  onUpdatePatient,
+  patientId,
 }: {
   patient: Patient | undefined;
   loading: boolean;
   lastAppointment: string | undefined;
+  onUpdatePatient: (updatedPatient: Patient) => Promise<void>;
+  patientId: string | undefined; 
 }) {
+  const { toast } = useToast();
+  
+
+  const handleContactUpdate = async (type: 'phone' | 'email' | 'address' | 'gender' | 'birthDate', value: string) => {
+    if (!patient?.id) {
+      throw new Error('Patient data is not available');
+    }
+  
+    try {
+      console.log("patientData", patient)
+      // Start with all existing patient data
+      // const updatedPatient: Patient = {
+      //   ...patient,
+      //   resourceType: 'Patient',
+      //   id: patientId,
+      //   meta: patient.meta,
+      //   active: true,
+      // };
+      if (type === 'gender') {
+        // Create a specific update for gender
+        const updatedPatient: Patient = {
+          resourceType: 'Patient',
+          gender: value as 'male' | 'female' | 'other' | 'unknown',
+        };
+        // console.log('Updating gender with:', updatedPatient);
+        await onUpdatePatient(updatedPatient);
+        toast({
+          title: "Updated Successfully",
+          description: `Gender has been updated.`,
+        });
+        return;
+      }
+      if (type === 'phone') {
+        const updatedPatient: Patient = {
+          resourceType: 'Patient',
+          telecom: [
+            // ...(patient.telecom?.filter(t => t.system !== 'phone' && t.system !== 'sms') || []),
+            ...(patient.telecom?.filter(t => t.system !== 'phone') || []),
+            {
+              system: 'phone' as const,
+              value: value,
+              use: 'home' as const
+            },
+            // Add new sms entry
+            // {
+            //   system: 'sms' as const,
+            //   value: value,
+            //   use: 'home' as const
+            // }
+          ],
+        };
+      
+        console.log('Updating phone with:', updatedPatient);
+        await onUpdatePatient(updatedPatient);
+        toast({
+          title: "Updated Successfully",
+          description: "Phone number has been updated.",
+        });
+        return;
+      }
+      if (type === 'email') {
+        const updatedPatient: Patient = {
+          resourceType: 'Patient',
+          telecom: [
+            ...(patient.telecom?.filter(t => t.system !== 'email') || []),
+            {
+              system: 'email' as const,
+              value: value,
+            },
+          ],
+        };
+        // console.log('Updating email with:', updatedPatient);
+        await onUpdatePatient(updatedPatient);
+        toast({
+          title: "Updated Successfully",
+          description: "Email has been updated.",
+        });
+        return;
+      }
+
+      if (type === 'address') {
+        updatedPatient.address = [value as Address];
+      }
+      if (type === 'birthDate') { 
+        // Format the date to YYYY-MM-DD as required by FHIR
+        const formattedDate = new Date(value).toISOString().split('T')[0];
+        const updatedPatient: Patient = {
+          resourceType: 'Patient',
+          birthDate: formattedDate,
+        };
+         // console.log('Updating birthDate with:', updatedPatient);
+        await onUpdatePatient(updatedPatient);
+        toast({
+          title: "Updated Successfully",
+          description: `Birthday has been updated.`,
+        });
+        return;
+      }
+      toast({
+        title: "Updated Successfully",
+        description: `${type.charAt(0).toUpperCase() + type.slice(1)} has been updated.`,
+      });
+    } catch (error) {
+      console.error('Update failed:', error);
+      toast({
+        title: "Update Failed",
+        description: error instanceof Error ? error.message : 'Failed to update',
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
   const location = useLocation();
 
   useEffect(() => {
@@ -102,11 +196,11 @@ export function PatientInfoCard({
       visitInfoFields[0].value = formatISODateToLocaleDate(lastAppointment ?? '') ?? 'No visits'; // Last visit
       visitInfoFields[1].value = formatISODateToLocaleDate(patient?.meta?.lastUpdated ?? ''); // Next visit
 
-      patientInfoFields[0].value = patient?.gender?.charAt(0).toUpperCase() + patient?.gender?.slice(1) || '';
+      patientInfoFields[0].value = patient?.gender ? patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1) : '';
       patientInfoFields[1].value = patient?.birthDate ? calculateAge(patient.birthDate).toString() : '';
-      patientInfoFields[2].value = patient?.birthDate || '';
+      patientInfoFields[2].value = patient?.birthDate ?? '';
 
-      contactInfoFields[0].value = phone || '';
+      contactInfoFields[0].value = phone ?? '';
       contactInfoFields[1].value = email || '';
       contactInfoFields[2].value = addressStr;
     } catch (e) {}
@@ -180,10 +274,96 @@ export function PatientInfoCard({
     },
   ];
 
-  const sections = [
-    { title: '', fields: visitInfoFields },
-    { title: 'Patient Information', fields: patientInfoFields },
-    { title: 'Contact Information', fields: contactInfoFields },
+  // Add this helper function to format dates consistently
+  const formatDateForDisplay = (dateString: string | undefined): string => {
+    if (!dateString) return 'Unknown';
+    const date = new Date(dateString);
+    return date.toLocaleDateString(); // This will format as MM/DD/YYYY
+  };
+
+  const formatBirthDate = (dateString: string | undefined): string => {
+    if (!dateString) return 'N/A';
+    try {
+      // Split the ISO date string directly
+      const [year, month, day] = dateString.split('-');
+      // Convert to M/D/YYYY format, ensuring we don't lose the correct date
+      return `${parseInt(month)}/${parseInt(day)}/${year}`;
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return dateString;
+    }
+  };
+
+  const sections: Section[] = [
+    {
+      title: "Patient Information",
+      fields: [
+        {
+          label: 'Gender',
+          value: patient?.gender || 'Unknown',
+          icon: User,
+          editable: true,
+          type: 'select',
+          options: ['male', 'female', 'other', 'unknown'],
+          onUpdate: async (value: string) => {
+            await handleContactUpdate('gender', value);
+          },
+        },
+        {
+          label: 'Birthday',
+          value: formatBirthDate(patient?.birthDate),
+          icon: Calendar,
+          editable: true,
+          type: 'date',
+          onUpdate: (value: string) => handleContactUpdate('birthDate', value),
+        },
+      ]
+    },
+    {
+      title: "Contact Information",
+      fields: [
+        {
+          label: 'Address',
+          // value: formatAddress(patient?.address?.[0] ?? { use: 'home', type: 'physical', country: 'USA' }) || 'N/A',
+          value: patient?.address?.[0]?.line?.[0] || 'N/A',
+          icon: Home,
+          editable: false,
+          onUpdate: (value: string) => handleContactUpdate('address', value),
+        },
+        {
+          label: 'Phone',
+          // value: getPhoneFromRelatedPerson() || 'N/A',
+          value: standardizePhoneNumber(patient?.telecom?.find((t) => t.system === 'phone')?.value) || 'N/A',
+          icon: Phone,
+          editable: true,
+          onUpdate: (value: string) => handleContactUpdate('phone', value),
+        },
+        {
+          label: 'Email',
+          value: patient?.telecom?.find((t) => t.system === 'email')?.value || 'N/A',
+          icon: Mail,
+          editable: true,
+          onUpdate: (value: string) => handleContactUpdate('email', value),
+        },
+      ]
+    },
+    {
+      title: "Visit Information",
+      fields: [
+        {
+          label: 'Last Visit',
+          value: lastAppointment ? formatISOStringToDateAndTime(lastAppointment) : 'No visits',
+          icon: Clock,
+          editable: false,
+        },
+        {
+          label: 'Paperwork Last Updated',
+          value: '03/15/2024, 14:30',
+          icon: FileText,
+          editable: false,
+        },
+      ]
+    }
   ];
 
   return (
@@ -193,7 +373,7 @@ export function PatientInfoCard({
           <Skeleton className="bg-gray-200 w-16 h-16 rounded-full mb-2" />
         ) : (
           <Avatar className="w-16 h-16 mb-2">
-            <AvatarImage src={`https://randomuser.me/api/portraits/men/${Math.floor(Math.random() * 100)}.jpg`} />
+            {/* <AvatarImage src={`https://randomuser.me/api/portraits/men/${Math.floor(Math.random() * 100)}.jpg`} /> */}
             <AvatarFallback>{getInitials(patientName)}</AvatarFallback>
           </Avatar>
         )}
@@ -218,38 +398,36 @@ export function PatientInfoCard({
           <Skeleton className="bg-gray-200 flex h-8" />
         ) : (
           <div className="pt-2 flex gap-1">
-            <Button className="font-bold bg-blue-500 text-white hover:bg-blue-600 px-3">
+            {/* <Button disabled={true} className="font-bold bg-blue-500 text-white hover:bg-blue-600 px-3 disabled:opacity-50">
               <MessageSquare className="w-4 h-4" />
             </Button>
-            <Button className="font-bold bg-blue-500 text-white hover:bg-blue-600 px-3">
+            <Button disabled={true} className="font-bold bg-blue-500 text-white hover:bg-blue-600 px-3 disabled:opacity-50">
               <Video className="w-4 h-4" />
             </Button>
-            <Button variant="outline" className="font-bold flex-none lg:flex-1 ">
+            <Button  variant="outline" className="font-bold flex-none lg:flex-1 disabled:opacity-50">
               <CalendarPlus2 className="w-4 h-4" />
               Set Appointment
             </Button>
-            <Button variant="outline" className="ml-auto px-3">
+            <Button variant="outline" className="ml-auto px-3 disabled:opacity-50">
               <EllipsisVertical className="h-4" />
-            </Button>
+            </Button> */}
           </div>
         )}
       </CardHeader>
 
-      {/* TODO: make info field a recyclable component */}
-      {/* TODO: create info object */}
       <CardContent className="space-y-4">
-        {sections.map((section) => (
-          <div className="flex flex-col gap-2 border-t pt-4">
+        
+      {sections.map((section) => (
+          <div key={section.title} className="flex flex-col gap-2 border-t pt-4">
             {loading && section.title ? (
               <Skeleton className="bg-gray-200 w-48 h-8" />
             ) : section.title ? (
               <h1 className="text-lg font-bold py-1">{section.title}</h1>
-            ) : (
-              ''
-            )}
+            ) : null}
+            
             {section.fields.map((field) =>
               loading ? (
-                <div className="flex justify-between items-center gap-2">
+                <div key={field.label} className="flex justify-between items-center gap-2">
                   <Skeleton
                     className="bg-gray-200 flex h-5"
                     style={{ width: `${Math.floor(Math.random() * (200 - 100 + 1)) + 50}px` }}
@@ -260,15 +438,19 @@ export function PatientInfoCard({
                   />
                 </div>
               ) : (
-                <CardDescription className="flex justify-between items-center cursor-pointers group/item rounded-md">
-                  <div className="flex items-center gap-2 ">
-                    <field.icon className="w-4 h-4" /> {field.label}
-                  </div>
-                  <div className="text-gray-700 font-bold text-right group-hover/item:sbg-gray-100 p-1 rounded-md">
-                    {field.value}
-                  </div>
-                </CardDescription>
-              ),
+                <div className={`${!field.editable && 'mr-[40px]'}`}> 
+                  <EditableField
+                    key={field.label}
+                    label={field.label}
+                    value={field.value}
+                    icon={field.icon}
+                    editable={field.editable}
+                    type={field.type}
+                    options={field.options}
+                    onUpdate={field.onUpdate}
+                  />
+                </div>
+              )
             )}
           </div>
         ))}
@@ -311,11 +493,6 @@ export function PatientInfoCard({
               </CardDescription>
             </div>
           )}
-          {/* <CardDescription className="flex justify-between items-center cursor-pointers group/item rounded-md">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4" /> No upcoming visits
-            </div>
-          </CardDescription> */}
         </div>
       </CardContent>
     </Card>
